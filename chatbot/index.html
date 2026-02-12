@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bidathon'26 — Agent Chatbot</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: #0f0f1a;
+      color: #e0e0e0;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ── Header ─────────────────────────────────────── */
+    header {
+      background: linear-gradient(135deg, #1a1a2e, #16213e);
+      padding: 16px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid #2a2a4a;
+      flex-shrink: 0;
+    }
+    header h1 {
+      font-size: 1.25rem;
+      font-weight: 600;
+      background: linear-gradient(90deg, #00d2ff, #7b2ff7);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    header .status {
+      font-size: 0.75rem;
+      color: #888;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    header .status .dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: #444;
+    }
+    header .status .dot.online { background: #00e676; }
+
+    /* ── Sidebar Tabs ───────────────────────────────── */
+    .app-container {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+    }
+    .sidebar {
+      width: 260px;
+      background: #12121f;
+      border-right: 1px solid #2a2a4a;
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+    }
+    .sidebar h3 {
+      padding: 16px;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      color: #666;
+      letter-spacing: 1px;
+    }
+    .sidebar .quick-btn {
+      padding: 10px 16px;
+      font-size: 0.85rem;
+      color: #bbb;
+      cursor: pointer;
+      border: none;
+      background: none;
+      text-align: left;
+      transition: background 0.15s;
+      font-family: inherit;
+    }
+    .sidebar .quick-btn:hover { background: #1e1e35; color: #fff; }
+    .sidebar .section-label {
+      padding: 12px 16px 4px;
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      color: #555;
+      letter-spacing: 1px;
+    }
+    .sidebar .user-id-box {
+      margin: auto 16px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .sidebar .user-id-box label {
+      font-size: 0.7rem;
+      color: #666;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    .sidebar .user-id-box input {
+      background: #1a1a2e;
+      border: 1px solid #333;
+      border-radius: 6px;
+      padding: 8px 10px;
+      color: #ccc;
+      font-size: 0.85rem;
+      font-family: inherit;
+      outline: none;
+    }
+    .sidebar .user-id-box input:focus { border-color: #7b2ff7; }
+
+    /* ── Chat Area ──────────────────────────────────── */
+    .chat-container {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .messages::-webkit-scrollbar { width: 6px; }
+    .messages::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
+
+    .msg {
+      max-width: 75%;
+      padding: 12px 16px;
+      border-radius: 12px;
+      line-height: 1.5;
+      font-size: 0.9rem;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+    }
+    .msg.user {
+      align-self: flex-end;
+      background: linear-gradient(135deg, #7b2ff7, #5b1fd6);
+      color: #fff;
+      border-bottom-right-radius: 4px;
+    }
+    .msg.bot {
+      align-self: flex-start;
+      background: #1e1e35;
+      border: 1px solid #2a2a4a;
+      border-bottom-left-radius: 4px;
+    }
+    .msg.bot .meta {
+      margin-top: 10px;
+      padding-top: 8px;
+      border-top: 1px solid #333;
+      font-size: 0.75rem;
+      color: #888;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    .msg.bot .meta .tag {
+      background: #2a2a4a;
+      padding: 2px 8px;
+      border-radius: 4px;
+      color: #aaa;
+    }
+    .msg.bot .meta .intent-tag {
+      background: #1a3a2a;
+      color: #4ae;
+    }
+    .msg.error {
+      align-self: center;
+      background: #3a1a1a;
+      border: 1px solid #5a2a2a;
+      color: #f88;
+      font-size: 0.85rem;
+    }
+    .msg.system {
+      align-self: center;
+      background: transparent;
+      color: #555;
+      font-size: 0.8rem;
+      text-align: center;
+    }
+
+    /* ── Typing Indicator ───────────────────────────── */
+    .typing {
+      align-self: flex-start;
+      display: flex;
+      gap: 4px;
+      padding: 12px 20px;
+      background: #1e1e35;
+      border: 1px solid #2a2a4a;
+      border-radius: 12px;
+    }
+    .typing span {
+      width: 8px; height: 8px;
+      background: #555;
+      border-radius: 50%;
+      animation: bounce 1.2s infinite;
+    }
+    .typing span:nth-child(2) { animation-delay: 0.2s; }
+    .typing span:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes bounce {
+      0%, 80%, 100% { transform: translateY(0); }
+      40% { transform: translateY(-8px); }
+    }
+
+    /* ── Input Area ─────────────────────────────────── */
+    .input-area {
+      padding: 16px 24px;
+      background: #12121f;
+      border-top: 1px solid #2a2a4a;
+      display: flex;
+      gap: 10px;
+      flex-shrink: 0;
+    }
+    .input-area input {
+      flex: 1;
+      background: #1a1a2e;
+      border: 1px solid #333;
+      border-radius: 10px;
+      padding: 12px 16px;
+      color: #e0e0e0;
+      font-size: 0.95rem;
+      font-family: inherit;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .input-area input:focus { border-color: #7b2ff7; }
+    .input-area button {
+      background: linear-gradient(135deg, #7b2ff7, #00d2ff);
+      border: none;
+      border-radius: 10px;
+      padding: 12px 24px;
+      color: #fff;
+      font-weight: 600;
+      cursor: pointer;
+      font-size: 0.9rem;
+      font-family: inherit;
+      transition: opacity 0.2s;
+    }
+    .input-area button:hover { opacity: 0.85; }
+    .input-area button:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    /* ── Markdown-ish rendering ─────────────────────── */
+    .msg.bot strong, .msg.bot b { color: #7bcfff; }
+    .msg.bot em { color: #bbb; }
+    .msg.bot code {
+      background: #2a2a4a;
+      padding: 1px 5px;
+      border-radius: 3px;
+      font-size: 0.85em;
+    }
+    .msg.bot ul, .msg.bot ol { padding-left: 20px; margin: 4px 0; }
+
+    @media (max-width: 768px) {
+      .sidebar { display: none; }
+      .msg { max-width: 90%; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>Bidathon'26 Financial Agent</h1>
+  <div class="status">
+    <span class="dot" id="statusDot"></span>
+    <span id="statusText">Checking...</span>
+  </div>
+</header>
+
+<div class="app-container">
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <h3>Quick Prompts</h3>
+
+    <div class="section-label">Stocks</div>
+    <button class="quick-btn" onclick="sendQuick('What is the price of AAPL?')">📈 Price of AAPL</button>
+    <button class="quick-btn" onclick="sendQuick('Should I buy Tesla?')">🔍 Analyze Tesla</button>
+    <button class="quick-btn" onclick="sendQuick('Give me company info for MSFT')">🏢 MSFT Info</button>
+
+    <div class="section-label">Market</div>
+    <button class="quick-btn" onclick="sendQuick('How is the market doing today?')">🌍 Market Overview</button>
+    <button class="quick-btn" onclick="sendQuick('What is the trend of AAPL?')">📊 AAPL Trend</button>
+
+    <div class="section-label">Education</div>
+    <button class="quick-btn" onclick="sendQuick('What is a mutual fund?')">📚 Mutual Funds</button>
+    <button class="quick-btn" onclick="sendQuick('Explain SIP investing')">💡 SIP Explained</button>
+
+    <div class="section-label">Calculators</div>
+    <button class="quick-btn" onclick="sendQuick('Calculate SIP for 5000/month at 12% for 10 years')">🧮 SIP Calc</button>
+    <button class="quick-btn" onclick="sendQuick('Calculate EMI for 10 lakh loan at 8.5% for 20 years')">🏦 EMI Calc</button>
+
+    <div class="section-label">Safety Test</div>
+    <button class="quick-btn" onclick="sendQuick('Tell me a guaranteed stock to double my money')">🚫 Risky Query</button>
+
+    <div class="user-id-box">
+      <label>User ID (for memory)</label>
+      <input type="text" id="userId" value="test-user-1" />
+    </div>
+  </aside>
+
+  <!-- Chat -->
+  <main class="chat-container">
+    <div class="messages" id="messages">
+      <div class="msg system">Ask any financial question. The agent will classify intent, fetch data, and respond with grounded analysis.</div>
+    </div>
+
+    <div class="input-area">
+      <input type="text" id="queryInput" placeholder="Ask about stocks, markets, SIP, loans..." autocomplete="off" />
+      <button id="sendBtn" onclick="sendMessage()">Send</button>
+    </div>
+  </main>
+</div>
+
+<script>
+  const API_BASE = 'http://localhost:8000';
+  const messagesEl = document.getElementById('messages');
+  const queryInput = document.getElementById('queryInput');
+  const sendBtn = document.getElementById('sendBtn');
+  const statusDot = document.getElementById('statusDot');
+  const statusText = document.getElementById('statusText');
+
+  // ── Health check ───────────────────────────────────
+  async function checkHealth() {
+    try {
+      const res = await fetch(API_BASE + '/');
+      if (res.ok) {
+        statusDot.classList.add('online');
+        statusText.textContent = 'Connected';
+      } else throw new Error();
+    } catch {
+      statusDot.classList.remove('online');
+      statusText.textContent = 'Offline — start the backend';
+    }
+  }
+  checkHealth();
+  setInterval(checkHealth, 10000);
+
+  // ── Enter key ──────────────────────────────────────
+  queryInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && !sendBtn.disabled) sendMessage();
+  });
+
+  // ── Quick prompt buttons ───────────────────────────
+  function sendQuick(text) {
+    queryInput.value = text;
+    sendMessage();
+  }
+
+  // ── Simple markdown → HTML ─────────────────────────
+  function renderMarkdown(text) {
+    return text
+      // Bold
+      .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+      // Italic
+      .replace(/\*(.+?)\*/g, '<em>$1</em>')
+      // Inline code
+      .replace(/`(.+?)`/g, '<code>$1</code>')
+      // Bullet list items
+      .replace(/^[\-\•]\s+/gm, '• ')
+      // Numbered lists
+      .replace(/^\d+\.\s+/gm, (m) => m)
+      // Headings (lines starting with #)
+      .replace(/^#{1,3}\s+(.+)$/gm, '<strong>$1</strong>')
+      // Horizontal rules
+      .replace(/^---+$/gm, '<hr style="border:none;border-top:1px solid #333;margin:8px 0">')
+      // Line breaks
+      .replace(/\n/g, '<br>');
+  }
+
+  // ── Send message ───────────────────────────────────
+  async function sendMessage() {
+    const query = queryInput.value.trim();
+    if (!query) return;
+
+    const userId = document.getElementById('userId').value.trim() || 'anonymous';
+
+    // Add user bubble
+    addMessage(query, 'user');
+    queryInput.value = '';
+    sendBtn.disabled = true;
+
+    // Typing indicator
+    const typingEl = document.createElement('div');
+    typingEl.className = 'typing';
+    typingEl.innerHTML = '<span></span><span></span><span></span>';
+    messagesEl.appendChild(typingEl);
+    scrollToBottom();
+
+    try {
+      const res = await fetch(API_BASE + '/api/agent/query', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ query, user_id: userId }),
+      });
+
+      typingEl.remove();
+
+      if (!res.ok) {
+        const err = await res.text();
+        addMessage('Server error: ' + err, 'error');
+        return;
+      }
+
+      const data = await res.json();
+
+      // Build bot message with meta
+      const msgEl = document.createElement('div');
+      msgEl.className = 'msg bot';
+
+      const contentDiv = document.createElement('div');
+      contentDiv.innerHTML = renderMarkdown(data.response);
+      msgEl.appendChild(contentDiv);
+
+      // Meta tags
+      const metaDiv = document.createElement('div');
+      metaDiv.className = 'meta';
+      metaDiv.innerHTML = `
+        <span class="tag intent-tag">Intent: ${data.intent}</span>
+        ${data.tools_used.map(t => `<span class="tag">${t}</span>`).join('')}
+        ${data.tickers.length ? `<span class="tag">Tickers: ${data.tickers.join(', ')}</span>` : ''}
+      `;
+      msgEl.appendChild(metaDiv);
+
+      messagesEl.appendChild(msgEl);
+      scrollToBottom();
+
+    } catch (err) {
+      typingEl.remove();
+      addMessage('Connection error: ' + err.message, 'error');
+    } finally {
+      sendBtn.disabled = false;
+      queryInput.focus();
+    }
+  }
+
+  function addMessage(text, type) {
+    const el = document.createElement('div');
+    el.className = `msg ${type}`;
+    if (type === 'user') {
+      el.textContent = text;
+    } else {
+      el.innerHTML = renderMarkdown(text);
+    }
+    messagesEl.appendChild(el);
+    scrollToBottom();
+  }
+
+  function scrollToBottom() {
+    messagesEl.scrollTop = messagesEl.scrollHeight;
+  }
+
+  queryInput.focus();
+</script>
+</body>
+</html>

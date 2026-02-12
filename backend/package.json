@@ -1,11 +1,12 @@
 {
-  "name": "backend",
-  "version": "1.0.0",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "author": "",
-  "license": "ISC",
-  "description": ""
+  "dependencies": {
+    "beautifulsoup4": "^0.0.1-security",
+    "fastapi": "^0.0.8",
+    "httpx": "^3.0.1",
+    "langchain": "^1.2.23",
+    "pydantic": "^0.0.1-security",
+    "python-dotenv": "^0.0.1-security",
+    "uvicorn": "^0.0.1-security",
+    "yfinance": "^0.0.6"
+  }
 }

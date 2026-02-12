@@ -1,0 +1,42 @@
+# ── Python ───────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.egg-info/
+dist/
+build/
+*.egg
+
+# ── Virtual environment ──────────────────────────
+venv/
+.venv/
+env/
+
+# ── Environment variables / secrets ──────────────
+.env
+app/tools/.env
+
+# ── IDE / Editor ─────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# ── OS files ─────────────────────────────────────
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ── Node (package.json exists in backend) ────────
+node_modules/
+package-lock.json
+
+# ── Logs ─────────────────────────────────────────
+*.log
+
+# ── Testing / Coverage ──────────────────────────
+.pytest_cache/
+htmlcov/
+.coverage
