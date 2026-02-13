@@ -13,20 +13,22 @@ def save_interaction(
     query: str,
     intent: str,
     response_summary: str,
+    tickers: list[str] | None = None,
 ) -> None:
     """Save an interaction to the user's session history (last 20 kept)."""
+    interaction = {
+        "query": query,
+        "intent": intent,
+        "response_summary": response_summary,
+    }
+    if tickers:
+        interaction["tickers"] = tickers
     db["user_sessions"].update_one(
         {"user_id": user_id},
         {
             "$push": {
                 "interactions": {
-                    "$each": [
-                        {
-                            "query": query,
-                            "intent": intent,
-                            "response_summary": response_summary,
-                        }
-                    ],
+                    "$each": [interaction],
                     "$slice": -20,
                 }
             },
@@ -66,3 +68,18 @@ def clear_session(user_id: str) -> bool:
     """Delete a user's session. Returns True if deleted."""
     result = db["user_sessions"].delete_one({"user_id": user_id})
     return result.deleted_count > 0
+
+
+def get_last_tickers(user_id: str) -> list[str]:
+    """Get the most recently used tickers from the user's conversation history."""
+    session = db["user_sessions"].find_one(
+        {"user_id": user_id}, {"_id": 0, "interactions": {"$slice": -5}}
+    )
+    if not session or not session.get("interactions"):
+        return []
+    # Walk backwards to find the most recent interaction that had tickers
+    for item in reversed(session["interactions"]):
+        tickers = item.get("tickers", [])
+        if tickers:
+            return tickers
+    return []

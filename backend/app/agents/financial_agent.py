@@ -10,9 +10,10 @@ import re as _re
 import time
 import traceback
 
-from app.agents.intent_classifier import Intent, classify, extract_tickers
+from app.agents.intent_classifier import Intent
+from app.agents.llm_classifier import classify_query
 from app.agents.safety import detect_risky_query, DISCLAIMER, check_rate_limit
-from app.agents.memory import save_interaction, get_context_summary
+from app.agents.memory import save_interaction, get_context_summary, get_last_tickers
 from app.services.openai_llm import chat_completion
 from app.services.yfinance.yf import (
     get_stock_quote,
@@ -544,22 +545,63 @@ def _gather_data_for_intent(
 
 
 def _resolve_tickers_from_query(query: str) -> list[str]:
-    """Try to resolve company names to tickers using yfinance search."""
+    """Try to resolve company names to tickers using yfinance search.
+    Prefers NSE/BSE (.NS/.BO) matches over foreign exchange listings.
+    """
+    # Common words that start with uppercase (sentence-start) but aren't company names
+    _SKIP_WORDS = {
+        "the", "a", "an", "is", "are", "was", "were", "be", "been", "being",
+        "have", "has", "had", "do", "does", "did", "will", "would", "could",
+        "should", "may", "might", "shall", "can", "need", "dare", "ought",
+        "for", "and", "nor", "but", "or", "yet", "so", "in", "on", "at",
+        "to", "of", "by", "from", "with", "about", "into", "through",
+        "how", "what", "which", "who", "when", "where", "why",
+        "show", "give", "get", "make", "create", "generate", "display",
+        "chart", "graph", "plot", "analyze", "compare", "check", "find",
+        "buy", "sell", "invest", "trade", "price", "stock", "share",
+        "last", "next", "past", "recent", "today", "yesterday", "tomorrow",
+        "ok", "okay", "yes", "no", "yeah", "nah", "sure", "fine", "right",
+        "then", "also", "please", "thanks", "thank", "sorry", "hello", "hi",
+        "hey", "well", "now", "just", "also", "too", "much", "many",
+        "good", "bad", "best", "worst", "more", "less", "very", "really",
+        "some", "any", "all", "each", "every", "other", "another",
+        "short", "long", "term", "time", "day", "days", "week", "weeks",
+        "month", "months", "year", "years", "ago", "since",
+        "shares", "stocks", "market", "money", "profit", "loss",
+    }
+
     words = query.split()
     search_terms = []
     for w in words:
         clean = w.strip("?.,!\"'")
-        if clean and clean[0].isupper() and len(clean) > 1:
-            search_terms.append(clean)
+        # Remove possessives: "Reliance's" → "Reliance"
+        if clean.endswith("'s") or clean.endswith("\u2019s"):
+            clean = clean[:-2]
+        if clean and len(clean) > 1 and clean.lower() not in _SKIP_WORDS:
+            # Only consider words that look like names (capitalized) or ALL-CAPS
+            if clean[0].isupper():
+                search_terms.append(clean)
 
     if not search_terms:
-        search_terms = [query]
+        return []
 
     for term in search_terms[:2]:
         try:
             results = search_ticker(term)
-            if results and results[0].get("symbol"):
-                return [results[0]["symbol"]]
+            if not results:
+                continue
+            # Prefer NSE/BSE matches
+            nse_match = next(
+                (r["symbol"] for r in results
+                 if r.get("symbol", "").endswith((".NS", ".BO"))),
+                None,
+            )
+            if nse_match:
+                return [nse_match]
+            # Fall back to top result only if symbol matches the search term
+            top = results[0].get("symbol", "")
+            if top and term.upper() in top.upper():
+                return [top]
         except Exception:
             continue
     return []
@@ -767,9 +809,32 @@ def process_query(
 
     clean_query = _re.sub(r'^\[(?:TRADE|CHART|ADVISOR)\]\s*', '', english_query, flags=_re.IGNORECASE)
 
-    classification = classify(english_query)  # classify uses raw query for prefix detection
+    classification = classify_query(english_query)
     intent: Intent = classification["intent"]
     tickers: list[str] = classification["tickers"]
+    reasoning = classification.get("reasoning", "")
+    print(f"[Agent] Intent: {intent}, Tickers: {tickers}, Reasoning: {reasoning}")
+
+    # Ticker resolution priority:
+    # 1. Classifier already extracted tickers (above)
+    # 2. Try resolving company names from the query text
+    # 3. Only then fall back to conversation history
+    if not tickers and intent in (
+        Intent.STOCK_QUOTE, Intent.STOCK_ANALYSIS, Intent.STOCK_CHART,
+        Intent.TRADE_ORDER,
+    ):
+        # Step 2: Try to find company names in the query
+        query_tickers = _resolve_tickers_from_query(clean_query)
+        if query_tickers:
+            tickers = query_tickers
+            print(f"[Agent] Resolved tickers from query text: {tickers}")
+        else:
+            # Step 3: Fall back to conversation history
+            context_tickers = get_last_tickers(user_id)
+            if context_tickers:
+                tickers = context_tickers
+                print(f"[Agent] Using context tickers from previous conversation: {tickers}")
+
 
     if language and language.lower() != "en" and intent == Intent.GENERAL_FINANCE and not tickers:
          # Fallback: if translation failed or was ambiguous, maybe try original query? 
@@ -796,6 +861,7 @@ def process_query(
     _quote_data = {}
     _trend_data = {}
     _info_data = {}
+    _resolved_tickers = []
     
     if language and language.lower() != "en":
         system_prompt += f"\n\nIMPORTANT: The user has selected the language: {language}. You MUST respond in {language}. If the user request involves actions (like 'buy', 'chart'), interpret them in {language} but use the English tool outputs."
@@ -803,6 +869,7 @@ def process_query(
     # Gather more comprehensive data for advisor mode
     if is_advisor_mode and tickers:
         resolved = _normalize_tickers(tickers)
+        _resolved_tickers = resolved
         advisor_sections = []
         advisor_tools = list(tools_used or [])
         # _quote_data etc are already init above
@@ -830,8 +897,8 @@ def process_query(
                 )
                 if "stock_quote" not in advisor_tools:
                     advisor_tools.append("stock_quote")
-            except Exception:
-                pass
+            except Exception as eq:
+                print(f"[Advisor] Quote error for {ticker}: {eq}")
 
             advisor_steps.append({"step": len(advisor_steps) + 1, "title": "Analyzing Fundamentals", "detail": f"PE ratio, market cap, dividends for {ticker}", "status": "done"})
 
@@ -853,8 +920,8 @@ def process_query(
                 for t in ["stock_history", "trend_analysis"]:
                     if t not in advisor_tools:
                         advisor_tools.append(t)
-            except Exception:
-                pass
+            except Exception as et:
+                print(f"[Advisor] Trend error for {ticker}: {et}")
 
             advisor_steps.append({"step": len(advisor_steps) + 1, "title": "Evaluating Company Profile", "detail": f"Sector, business model, competitive position for {ticker}", "status": "done"})
             try:
@@ -869,8 +936,8 @@ def process_query(
                 )
                 if "company_info" not in advisor_tools:
                     advisor_tools.append("company_info")
-            except Exception:
-                pass
+            except Exception as ei:
+                print(f"[Advisor] Info error for {ticker}: {ei}")
 
         advisor_steps.append({"step": len(advisor_steps) + 1, "title": "Generating Investment Thesis", "detail": "Building bull/bear cases and investment recommendation", "status": "done"})
 
@@ -900,7 +967,7 @@ def process_query(
     if answer is None:
         if is_advisor_mode and tickers:
             # Generate structured advisor fallback from collected data
-            answer = _format_advisor_fallback(tickers, _quote_data if is_advisor_mode else {}, _trend_data if is_advisor_mode else {}, _info_data if is_advisor_mode else {})
+            answer = _format_advisor_fallback(_resolved_tickers or tickers, _quote_data, _trend_data, _info_data)
         else:
             answer = _format_fallback(intent, tool_data)
 
@@ -910,50 +977,63 @@ def process_query(
     chart_data = None
     trade_preview = None
 
-    if intent == Intent.STOCK_CHART and tickers:
-        resolved = _normalize_tickers(tickers)
-        period, interval = _parse_chart_period(clean_query)
-        try:
-            ticker = resolved[0]
-            history = get_stock_history(ticker, period=period, interval=interval)
-            if history and isinstance(history, list) and len(history) > 0:
-                chart_data = {
-                    "ticker": ticker,
-                    "period": period,
-                    "interval": interval,
-                    "data": history[:500],
-                }
-        except Exception:
-            pass
-
-    if intent == Intent.TRADE_ORDER and tickers:
-        resolved = _normalize_tickers(tickers)
-        ql = clean_query.lower()
-        side = "BUY"
-        if any(w in ql for w in ["sell", "exit", "liquidate", "offload"]):
-            side = "SELL"
-        qty = 1
-        for word in clean_query.split():
+    if intent == Intent.STOCK_CHART:
+        chart_tickers = tickers
+        if not chart_tickers:
+            chart_tickers = _resolve_tickers_from_query(clean_query)
+        if chart_tickers:
+            resolved = _normalize_tickers(chart_tickers)
+            period, interval = _parse_chart_period(clean_query)
             try:
-                num = int(word)
-                if 1 <= num <= 100000:
-                    qty = num
-                    break
-            except ValueError:
-                continue
-        try:
-            preview = trading_service.preview_order(
-                user_id=user_id,
-                ticker=resolved[0],
-                side=side,
-                quantity=qty,
-            )
-            trade_preview = preview
-        except Exception:
-            pass
+                ticker = resolved[0]
+                history = get_stock_history(ticker, period=period, interval=interval)
+                if history and isinstance(history, list) and len(history) > 0:
+                    chart_data = {
+                        "ticker": ticker,
+                        "period": period,
+                        "interval": interval,
+                        "data": history[:500],
+                    }
+                    # Update tickers for response metadata
+                    if not tickers:
+                        tickers = chart_tickers
+            except Exception:
+                pass
+
+    if intent == Intent.TRADE_ORDER:
+        trade_tickers = tickers
+        if not trade_tickers:
+            trade_tickers = _resolve_tickers_from_query(clean_query)
+        if trade_tickers:
+            resolved = _normalize_tickers(trade_tickers)
+            ql = clean_query.lower()
+            side = "BUY"
+            if any(w in ql for w in ["sell", "exit", "liquidate", "offload"]):
+                side = "SELL"
+            qty = 1
+            for word in clean_query.split():
+                try:
+                    num = int(word)
+                    if 1 <= num <= 100000:
+                        qty = num
+                        break
+                except ValueError:
+                    continue
+            try:
+                preview = trading_service.preview_order(
+                    user_id=user_id,
+                    ticker=resolved[0],
+                    side=side,
+                    quantity=qty,
+                )
+                trade_preview = preview
+                if not tickers:
+                    tickers = trade_tickers
+            except Exception:
+                pass
 
     try:
-        save_interaction(user_id, clean_query, intent.value, answer[:300])
+        save_interaction(user_id, clean_query, intent.value, answer[:300], tickers=tickers)
     except Exception:
         pass
 

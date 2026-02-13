@@ -145,6 +145,24 @@ _KNOWN_WORDS = {
     "PENDING", "FILLED", "REJECTED", "COMPLETED", "STATUS",
     "STOP", "LIMIT", "TRIGGER", "MARGIN", "LEVERAGE",
     "INTRADAY", "DELIVERY", "SWING", "POSITION", "ENTRY",
+    # Stop words from user reports
+    "TRENDS", "SHOWING", "PRICES", "ANALYSIS", "WEEK", "CREATING", "MAKING", "USING", "DOING",
+    "GOING", "COMING", "HAVING", "GETTING", "BETTER", "WORSE", "HIGHER", "LOWER",
+    "CHARTING", "TRADING", "INVESTING", "BUYING", "SELLING", "HOLDING", "LOOKING",
+    "THINKING", "WANTING", "NEEDING", "SAYING", "ASKING", "TELLING", "DATA", "INFO",
+    "INFORMATION", "DETAIL", "DETAILS", "REPORT", "REPORTS", "NEWS", "LATEST", "UPDATE",
+    "UPDATES", "TODAY", "YESTERDAY", "TOMORROW", "NOW", "THEN", "BEFORE", "AFTER",
+    "ALWAYS", "NEVER", "ONLY", "JUST", "EVEN", "STILL", "ALREADY", "ENOUGH", "MIGHT",
+    "MAYBE", "PROBABLY", "LIKELY", "SURE", "CERTAIN", "DEFINITELY", "ABSOLUTELY",
+    "EXACTLY", "BASICALLY", "SIMPLY", "REALLY", "TRULY", "ACTUALLY", "HONESTLY",
+    "QUICKLY", "SLOWLY", "EASILY", "HARDLY", "CLEARLY", "OBVIOUSLY", "APPARENTLY",
+    "POSSIBLY", "POTENTIALLY", "CURRENTLY", "RECENTLY", "LATELY", "FORMERLY",
+    "PREVIOUSLY", "INITIALLY", "FINALLY", "ULTIMATELY", "EVENTUALLY", "CONSTANTLY",
+    "CONSISTENTLY", "CONTINUOUSLY", "PERIODICALLY", "OCCASIONALLY", "FREQUENTLY",
+    "USUALLY", "NORMALLY", "TYPICALLY", "GENERALLY", "MOSTLY", "MAINLY", "CHIEFLY",
+    "PRIMARILY", "LARGELY", "PARTLY", "PARTIALLY", "WHOLLY", "COMPLETELY", "ENTIRELY",
+    "TOTALLY", "FULLY", "QUITE", "RATHER", "FAIRLY", "PRETTY", "VERY", "EXTREMELY",
+    "EXCEPTIONALLY", "ESPECIALLY", "PARTICULARLY", "SPECIFICALLY", "EXCLUSIVELY",
 }
 
 
@@ -172,27 +190,67 @@ def classify_intent(query: str) -> Intent:
     return Intent.GENERAL_FINANCE
 
 
+
+# ── Common uppercase abbreviations that are NOT tickers ──────────────────
+_COMMON_ACRONYMS = {
+    "SIP", "EMI", "ETF", "IPO", "NAV", "GDP", "ROI", "ROE", "EPS",
+    "PE", "FD", "RD", "PPF", "NPS", "APR", "APY", "USA", "UK", "EU",
+    "USD", "INR", "EUR", "GBP", "CEO", "CFO", "CTO", "COO", "HR",
+    "IT", "AI", "ML", "API", "FAQ", "PDF", "URL", "SMS", "OTP",
+    "PIN", "ATM", "KYC", "PAN", "GST", "TAX", "NSE", "BSE",
+    "SEBI", "RBI", "EMI", "SIP", "CAGR", "XIRR", "AUM",
+    "MF", "FII", "DII", "AGM", "P2P", "UPI", "NEFT", "RTGS",
+    "IMPS", "ELSS", "NRI", "HUF", "LLP", "PVT", "LTD",
+}
+
+# ── Known index / market aliases that ARE valid tickers ──────────────────
+_INDEX_ALIASES = {
+    "SENSEX", "NIFTY", "NIFTY50", "BANKNIFTY",
+    "DOWJONES", "DOW", "SP500", "NASDAQ",
+}
+
+
 def extract_tickers(query: str) -> list[str]:
     """
     Extract potential stock ticker symbols from the query.
 
-    Rules:
-    - 1–10 letters (case-insensitive)
-    - Not a common English word
-    - Can handle formats like: AAPL, $AAPL, reliance, Reliance
+    Strategy (strict — avoids false positives):
+      1. $-prefixed symbols (e.g. $AAPL, $TCS) — always extracted.
+      2. Known index aliases (SENSEX, NIFTY, etc.) — always extracted.
+      3. ALL-CAPS words 2–6 chars in the original text — likely intentional
+         ticker references (e.g. "TCS", "INFY"). Filtered against common
+         acronyms.
+      4. Words are NOT extracted if they are lowercase/mixed-case common
+         English words like "short", "term", "invest", etc.
     """
     # Strip mode prefix before extraction
-    cleaned = re.sub(r'^\[(?:TRADE|CHART)\]\s*', '', query, flags=re.IGNORECASE)
-    pattern = r'\b\$?([A-Za-z]{1,10})\b'
-    candidates = re.findall(pattern, cleaned)
+    cleaned = re.sub(r'^\[(?:TRADE|CHART|ADVISOR)\]\s*', '', query, flags=re.IGNORECASE)
 
     tickers = []
     seen = set()
-    for c in candidates:
-        upper = c.upper()
-        if upper not in _KNOWN_WORDS and upper not in seen and len(upper) >= 2:
+
+    def _add(symbol: str):
+        upper = symbol.upper().strip("$")
+        if upper and upper not in seen and len(upper) >= 2:
             seen.add(upper)
             tickers.append(upper)
+
+    # 1. $-prefixed symbols — strongest signal
+    for m in re.finditer(r'\$([A-Za-z]{1,10})', cleaned):
+        _add(m.group(1))
+
+    # 2. Known index aliases (case-insensitive scan)
+    for alias in _INDEX_ALIASES:
+        if re.search(rf'\b{alias}\b', cleaned, re.IGNORECASE):
+            _add(alias)
+
+    # 3. ALL-CAPS words (2-6 chars) that aren't common acronyms
+    #    These must appear as fully uppercase in the original query,
+    #    meaning the user intentionally typed them as tickers.
+    for m in re.finditer(r'\b([A-Z]{2,6})\b', cleaned):
+        word = m.group(1)
+        if word not in _COMMON_ACRONYMS and word not in _KNOWN_WORDS and word not in seen:
+            _add(word)
 
     return tickers
 
