@@ -1,0 +1,519 @@
+/* ═══════════════════════════════════════════════════════════
+   Strategy Run Panel — Step-by-step execution visualization
+   ═══════════════════════════════════════════════════════════ */
+
+.srp {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    overflow: hidden;
+}
+
+/* ─── Header ─── */
+.srp__header {
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+}
+
+.srp__title {
+    font-family: 'Inter', sans-serif;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.9);
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
+.srp__back-btn {
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    color: rgba(255, 255, 255, 0.6);
+    padding: 0.25rem 0.75rem;
+    font-size: 0.65rem;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    cursor: pointer;
+    border-radius: 3px;
+    transition: all 0.2s;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.srp__back-btn:hover {
+    border-color: rgba(4, 102, 200, 0.4);
+    color: #0466C8;
+}
+
+/* ─── Progress Bar ─── */
+.srp__progress-wrap {
+    padding: 0.5rem 1rem;
+    flex-shrink: 0;
+}
+
+.srp__progress-bar {
+    height: 3px;
+    background: rgba(255, 255, 255, 0.06);
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+.srp__progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #0466C8, #22c55e);
+    border-radius: 2px;
+    transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+}
+
+.srp__progress-fill::after {
+    content: '';
+    position: absolute;
+    right: 0;
+    top: -1px;
+    width: 12px;
+    height: 5px;
+    background: #22c55e;
+    border-radius: 3px;
+    box-shadow: 0 0 8px rgba(34, 197, 94, 0.6);
+    animation: srp-glow 1.5s ease-in-out infinite;
+}
+
+@keyframes srp-glow {
+
+    0%,
+    100% {
+        opacity: 0.6;
+    }
+
+    50% {
+        opacity: 1;
+    }
+}
+
+.srp__progress-label {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 0.3rem;
+    font-size: 0.6rem;
+    color: rgba(255, 255, 255, 0.35);
+    font-family: 'SF Mono', 'Fira Code', monospace;
+}
+
+/* ─── Steps Log ─── */
+.srp__steps {
+    flex: 1;
+    overflow-y: auto;
+    padding: 0.5rem 1rem;
+}
+
+.srp__step {
+    display: flex;
+    gap: 0.6rem;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+    animation: srp-fadein 0.4s ease-out;
+}
+
+@keyframes srp-fadein {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.srp__step-icon {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-size: 0.55rem;
+    font-family: 'SF Mono', monospace;
+    margin-top: 1px;
+}
+
+.srp__step-icon--done {
+    background: rgba(34, 197, 94, 0.15);
+    color: #22c55e;
+    border: 1px solid rgba(34, 197, 94, 0.3);
+}
+
+.srp__step-icon--active {
+    background: rgba(4, 102, 200, 0.15);
+    color: #0466C8;
+    border: 1px solid rgba(4, 102, 200, 0.3);
+    animation: srp-pulse 1.2s ease-in-out infinite;
+}
+
+@keyframes srp-pulse {
+
+    0%,
+    100% {
+        box-shadow: 0 0 0 0 rgba(4, 102, 200, 0.3);
+    }
+
+    50% {
+        box-shadow: 0 0 0 4px rgba(4, 102, 200, 0);
+    }
+}
+
+.srp__step-body {
+    flex: 1;
+    min-width: 0;
+}
+
+.srp__step-title {
+    font-size: 0.7rem;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.85);
+    font-family: 'Inter', sans-serif;
+}
+
+.srp__step-detail {
+    font-size: 0.62rem;
+    color: rgba(255, 255, 255, 0.4);
+    margin-top: 0.15rem;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    line-height: 1.4;
+}
+
+/* ─── Final Output ─── */
+.srp__output {
+    padding: 0.75rem 1rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    flex-shrink: 0;
+    animation: srp-fadein 0.5s ease-out;
+}
+
+.srp__output-title {
+    font-size: 0.65rem;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.5);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 0.5rem;
+    font-family: 'Inter', sans-serif;
+}
+
+/* ─── Trend Output ─── */
+.srp__trend-gauge {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.5rem;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 4px;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.srp__trend-dir {
+    font-size: 1.1rem;
+    font-weight: 700;
+    font-family: 'Inter', sans-serif;
+    letter-spacing: 0.05em;
+}
+
+.srp__trend-dir--bull {
+    color: #22c55e;
+}
+
+.srp__trend-dir--bear {
+    color: #ef4444;
+}
+
+.srp__trend-bar {
+    flex: 1;
+    height: 6px;
+    background: rgba(255, 255, 255, 0.06);
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.srp__trend-bar-fill {
+    height: 100%;
+    border-radius: 3px;
+    transition: width 0.8s ease;
+}
+
+.srp__trend-meta {
+    font-size: 0.6rem;
+    color: rgba(255, 255, 255, 0.4);
+    font-family: 'SF Mono', monospace;
+}
+
+/* ─── Momentum Output ─── */
+.srp__momentum {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    padding: 0.5rem;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 4px;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.srp__momentum-zone {
+    font-size: 0.9rem;
+    font-weight: 700;
+    font-family: 'Inter', sans-serif;
+    text-align: center;
+    padding: 0.3rem;
+    border-radius: 3px;
+}
+
+.srp__momentum-zone--overbought {
+    color: #ef4444;
+    background: rgba(239, 68, 68, 0.1);
+}
+
+.srp__momentum-zone--oversold {
+    color: #22c55e;
+    background: rgba(34, 197, 94, 0.1);
+}
+
+.srp__momentum-zone--neutral {
+    color: #eab308;
+    background: rgba(234, 179, 8, 0.1);
+}
+
+.srp__momentum-meter {
+    height: 8px;
+    background: linear-gradient(90deg, #22c55e 0%, #eab308 50%, #ef4444 100%);
+    border-radius: 4px;
+    position: relative;
+}
+
+.srp__momentum-needle {
+    position: absolute;
+    top: -3px;
+    width: 3px;
+    height: 14px;
+    background: white;
+    border-radius: 2px;
+    transform: translateX(-1px);
+    transition: left 0.8s ease;
+    box-shadow: 0 0 6px rgba(255, 255, 255, 0.5);
+}
+
+/* ─── Mean Reversion Output ─── */
+.srp__reversion {
+    padding: 0.5rem;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 4px;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    text-align: center;
+}
+
+.srp__reversion-label {
+    font-size: 0.6rem;
+    color: rgba(255, 255, 255, 0.4);
+    font-family: 'SF Mono', monospace;
+    margin-bottom: 0.3rem;
+}
+
+.srp__reversion-dist {
+    font-size: 1.4rem;
+    font-weight: 700;
+    font-family: 'Inter', sans-serif;
+}
+
+.srp__reversion-band {
+    height: 8px;
+    background: linear-gradient(90deg, #22c55e, rgba(255, 255, 255, 0.08), #ef4444);
+    border-radius: 4px;
+    position: relative;
+    margin-top: 0.4rem;
+}
+
+.srp__reversion-pos {
+    position: absolute;
+    top: -2px;
+    width: 4px;
+    height: 12px;
+    background: #0466C8;
+    border-radius: 2px;
+    transform: translateX(-2px);
+    transition: left 0.8s ease;
+    box-shadow: 0 0 6px rgba(4, 102, 200, 0.6);
+}
+
+/* ─── Volatility Output ─── */
+.srp__vol {
+    padding: 0.5rem;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 4px;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.srp__vol-regime {
+    font-size: 0.9rem;
+    font-weight: 700;
+    text-align: center;
+    padding: 0.3rem;
+    border-radius: 3px;
+    font-family: 'Inter', sans-serif;
+}
+
+.srp__vol-regime--high {
+    color: #ef4444;
+    background: rgba(239, 68, 68, 0.1);
+}
+
+.srp__vol-regime--low {
+    color: #22c55e;
+    background: rgba(34, 197, 94, 0.1);
+}
+
+.srp__vol-regime--normal {
+    color: #0466C8;
+    background: rgba(4, 102, 200, 0.1);
+}
+
+.srp__vol-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.3rem;
+    margin-top: 0.4rem;
+    font-size: 0.6rem;
+    font-family: 'SF Mono', monospace;
+    color: rgba(255, 255, 255, 0.5);
+}
+
+/* ─── ML Output ─── */
+.srp__ml {
+    padding: 0.5rem;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 4px;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.srp__ml-prediction {
+    font-size: 1rem;
+    font-weight: 700;
+    text-align: center;
+    padding: 0.3rem;
+    border-radius: 3px;
+    font-family: 'Inter', sans-serif;
+    margin-bottom: 0.4rem;
+}
+
+.srp__ml-prediction--long {
+    color: #22c55e;
+    background: rgba(34, 197, 94, 0.1);
+}
+
+.srp__ml-prediction--short {
+    color: #ef4444;
+    background: rgba(239, 68, 68, 0.1);
+}
+
+.srp__ml-prediction--flat {
+    color: #eab308;
+    background: rgba(234, 179, 8, 0.1);
+}
+
+.srp__ml-conf-bar {
+    height: 6px;
+    background: rgba(255, 255, 255, 0.06);
+    border-radius: 3px;
+    overflow: hidden;
+    margin-bottom: 0.3rem;
+}
+
+.srp__ml-conf-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #0466C8, #8b5cf6);
+    border-radius: 3px;
+    transition: width 0.8s ease;
+}
+
+.srp__ml-features {
+    display: flex;
+    gap: 0.4rem;
+    flex-wrap: wrap;
+}
+
+.srp__ml-feat {
+    font-size: 0.55rem;
+    padding: 0.15rem 0.4rem;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 2px;
+    color: rgba(255, 255, 255, 0.5);
+    font-family: 'SF Mono', monospace;
+}
+
+/* ─── Statistical Output ─── */
+.srp__stat {
+    padding: 0.5rem;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 4px;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    text-align: center;
+}
+
+.srp__stat-state {
+    font-size: 0.85rem;
+    font-weight: 700;
+    font-family: 'Inter', sans-serif;
+    color: #0466C8;
+    margin-bottom: 0.3rem;
+}
+
+.srp__stat-meta {
+    font-size: 0.6rem;
+    font-family: 'SF Mono', monospace;
+    color: rgba(255, 255, 255, 0.4);
+    line-height: 1.5;
+}
+
+/* ─── Metrics Row ─── */
+.srp__metrics {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.3rem;
+    padding: 0.5rem 1rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.04);
+    flex-shrink: 0;
+}
+
+.srp__metric {
+    text-align: center;
+    padding: 0.3rem;
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 3px;
+}
+
+.srp__metric-label {
+    font-size: 0.5rem;
+    color: rgba(255, 255, 255, 0.35);
+    font-family: 'SF Mono', monospace;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.srp__metric-value {
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.85);
+    font-family: 'SF Mono', monospace;
+    margin-top: 0.1rem;
+}
+
+/* ─── Error ─── */
+.srp__error {
+    padding: 0.75rem 1rem;
+    color: #ef4444;
+    font-size: 0.7rem;
+    font-family: 'SF Mono', monospace;
+    text-align: center;
+}

@@ -6,7 +6,7 @@ from app.models.url import (
     UrlCheckResponse,
     UrlListResponse,
 )
-from app.services.gemini import check_url_authenticity
+from app.services.openai_llm import check_url_authenticity
 from app.tools.url_store import read_urls, append_urls, remove_url
 
 router = APIRouter(prefix="/urls", tags=["urls"])

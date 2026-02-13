@@ -2,7 +2,6 @@ from pymongo import MongoClient
 import os
 from dotenv import load_dotenv
 
-# Load .env from the tools directory AND the backend root
 load_dotenv(os.path.join(os.path.dirname(__file__), '.env'))
 load_dotenv(os.path.join(os.path.dirname(__file__), '..', '..', '.env'))
 

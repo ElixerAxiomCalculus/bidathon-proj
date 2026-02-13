@@ -2,11 +2,10 @@ from pydantic import BaseModel
 from typing import Optional
 
 
-# ── Agent ────────────────────────────────────────────────────────────────────
-
 class AgentQueryRequest(BaseModel):
     query: str
     user_id: str = "anonymous"
+    language: str = "en"
 
 
 class AgentQueryResponse(BaseModel):
@@ -14,9 +13,9 @@ class AgentQueryResponse(BaseModel):
     intent: str
     tools_used: list[str]
     tickers: list[str]
+    chart_data: Optional[dict] = None
+    trade_preview: Optional[dict] = None
 
-
-# ── Calculators ──────────────────────────────────────────────────────────────
 
 class SipRequest(BaseModel):
     monthly_investment: float
@@ -66,8 +65,6 @@ class CompoundResponse(BaseModel):
     effective_annual_rate: float
 
 
-# ── Market Overview ──────────────────────────────────────────────────────────
-
 class MarketItem(BaseModel):
     name: str
     ticker: str
@@ -77,8 +74,6 @@ class MarketItem(BaseModel):
     change_pct: Optional[float] = None
     currency: str = "USD"
 
-
-# ── Trend ────────────────────────────────────────────────────────────────────
 
 class TrendResponse(BaseModel):
     direction: str

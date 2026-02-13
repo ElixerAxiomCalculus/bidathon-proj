@@ -17,10 +17,10 @@ class Intent(str, Enum):
     MARKET_STATUS = "market_status"
     NEWS_QUERY = "news_query"
     CALCULATOR = "calculator"
+    TRADE_ORDER = "trade_order"
+    STOCK_CHART = "stock_chart"
     GENERAL_FINANCE = "general_finance"
 
-
-# ── Keyword → Intent Mapping ─────────────────────────────────────────────────
 
 _INTENT_KEYWORDS: dict[Intent, list[str]] = {
     Intent.STOCK_QUOTE: [
@@ -63,10 +63,30 @@ _INTENT_KEYWORDS: dict[Intent, list[str]] = {
         "returns on", "investment returns", "sip returns",
         "monthly installment", "compounding",
     ],
+    Intent.TRADE_ORDER: [
+        "buy shares", "sell shares", "buy stock", "sell stock",
+        "place order", "execute trade", "purchase shares",
+        "buy 1", "buy 2", "buy 3", "buy 4", "buy 5",
+        "buy 10", "buy 20", "buy 50", "buy 100",
+        "sell 1", "sell 2", "sell 3", "sell 4", "sell 5",
+        "sell 10", "sell 20", "sell 50", "sell 100",
+        "i want to buy", "i want to sell",
+        "invest in", "start trading",
+        "my holdings", "my portfolio", "my balance",
+        "show portfolio", "show holdings", "show balance",
+        "trade history", "my trades", "order history",
+    ],
+    Intent.STOCK_CHART: [
+        "chart", "graph", "plot", "visual", "visualize",
+        "show me", "display", "trend chart", "price chart",
+        "candlestick", "line chart", "show graph",
+        "last 5 days", "last 7 days", "last 1 month", "last 3 months",
+        "past week", "past month", "historical chart",
+        "price history graph", "real time", "realtime",
+        "show trend", "show price",
+    ],
 }
 
-
-# ── Common English Words to Skip (Prevents False Ticker Matches) ─────────────
 
 _KNOWN_WORDS = {
     "I", "A", "AN", "AM", "AS", "AT", "BE", "BY", "DO", "GO", "IF", "IN",
@@ -88,9 +108,43 @@ _KNOWN_WORDS = {
     "WHICH", "WOULD", "THEIR", "THERE", "THESE", "THOSE", "SHOULD",
     "MARKET", "INVEST", "RETURN", "TRADE", "POINT", "WHERE",
     "STILL", "TOTAL", "UNDER",
-    # Financial terms that look like tickers
+    "SELL", "SHARES", "HOLD", "EXIT", "ORDER", "PLACE", "EXECUTE",
+    "PURCHASE", "BUYING", "SELLING", "TRADING", "BOUGHT", "SOLD",
+    "SHOW", "DISPLAY", "CHART", "GRAPH", "PLOT", "VISUAL", "TREND",
+    "MONTHLY", "WEEKLY", "DAILY", "YEARLY", "VARIATION", "HISTORY",
+    "PORTFOLIO", "HOLDINGS", "BALANCE", "DEMAT", "BROKER",
+    "ANALYZE", "ANALYSIS", "PREDICT", "FORECAST", "OUTLOOK",
+    "BULLISH", "BEARISH", "TARGET", "CURRENT", "REAL",
     "SIP", "EMI", "ETF", "IPO", "NAV", "GDP", "ROI", "ROE", "EPS",
     "PE", "FD", "RD", "PPF", "NPS", "APR", "APY",
+    # Financial / wallet / account words
+    "WALLET", "REMAINING", "LEFT", "AMOUNT", "SPEND", "SPENT",
+    "DEPOSIT", "WITHDRAW", "PAYMENT", "TRANSFER", "ACCOUNT",
+    "AVAILABLE", "FUNDS", "CASH", "DEBIT", "CREDIT", "CARD",
+    "PAY", "PAID", "PAYING", "INVEST", "INVESTING", "INVESTED",
+    "PROFIT", "LOSS", "GAINS", "LOSSES", "EARNING", "EARNINGS",
+    "INCOME", "EXPENSE", "BUDGET", "SAVE", "SAVING", "SAVINGS",
+    # Action / query words
+    "PLEASE", "GIVE", "GENERATE", "CREATE", "FETCH", "CHECK",
+    "VIEW", "OPEN", "CLOSE", "START", "STOP", "HELP", "NEED",
+    "WANT", "USING", "USED", "WORTH", "REMAINING", "LEFT",
+    "RIGHT", "TOP", "BOTTOM", "LIST", "DATA", "INFO",
+    # Time / misc words
+    "TODAY", "YESTERDAY", "TOMORROW", "WEEK", "MONTH", "HOUR",
+    "MINUTE", "SECOND", "MORNING", "EVENING", "NIGHT", "PAST",
+    "FUTURE", "RECENT", "LATEST", "AGO", "SINCE", "UNTIL",
+    # Common verbs / adjectives
+    "MEAN", "MEANS", "KNOW", "DOES", "DONT", "WONT", "CANT",
+    "BEEN", "DONE", "MADE", "WENT", "CAME", "SAID", "TOLD",
+    "GAVE", "TOOK", "CAME", "LEFT", "SENT", "FULL", "FREE",
+    "SAME", "BOTH", "SUCH", "REAL", "TRUE", "FALSE", "WRONG",
+    "COMPARE", "VERSUS", "BETWEEN", "AGAINST", "ABOVE", "BELOW",
+    # Pre/post trade words
+    "QUANTITY", "QTY", "LOT", "LOTS", "UNIT", "UNITS",
+    "CONFIRM", "PREVIEW", "REVIEW", "SUBMIT", "CANCEL",
+    "PENDING", "FILLED", "REJECTED", "COMPLETED", "STATUS",
+    "STOP", "LIMIT", "TRIGGER", "MARGIN", "LEVERAGE",
+    "INTRADAY", "DELIVERY", "SWING", "POSITION", "ENTRY",
 }
 
 
@@ -98,7 +152,14 @@ def classify_intent(query: str) -> Intent:
     """Classify a query into one of the supported intents using keyword matching."""
     lower = query.lower()
 
-    # Score each intent by counting keyword matches
+    # Mode-forced prefixes from frontend mode selector
+    if lower.startswith("[trade]"):
+        return Intent.TRADE_ORDER
+    if lower.startswith("[chart]"):
+        return Intent.STOCK_CHART
+    if lower.startswith("[advisor]"):
+        return Intent.STOCK_ANALYSIS
+
     scores: dict[Intent, int] = {}
     for intent, keywords in _INTENT_KEYWORDS.items():
         score = sum(1 for kw in keywords if kw in lower)
@@ -116,22 +177,20 @@ def extract_tickers(query: str) -> list[str]:
     Extract potential stock ticker symbols from the query.
 
     Rules:
-    - 1–5 uppercase letters
+    - 1–10 letters (case-insensitive)
     - Not a common English word
-    - Can handle formats like: AAPL, $AAPL, AAPL?, "AAPL"
+    - Can handle formats like: AAPL, $AAPL, reliance, Reliance
     """
-    # Match $TICKER or standalone UPPERCASE words
-    pattern = r'\$?([A-Z]{1,5})\b'
-    candidates = re.findall(pattern, query)
-
-    # Also try to extract from mixed case (e.g., "Apple" → search for ticker)
-    # But we primarily rely on uppercase matches
+    # Strip mode prefix before extraction
+    cleaned = re.sub(r'^\[(?:TRADE|CHART)\]\s*', '', query, flags=re.IGNORECASE)
+    pattern = r'\b\$?([A-Za-z]{1,10})\b'
+    candidates = re.findall(pattern, cleaned)
 
     tickers = []
     seen = set()
     for c in candidates:
         upper = c.upper()
-        if upper not in _KNOWN_WORDS and upper not in seen:
+        if upper not in _KNOWN_WORDS and upper not in seen and len(upper) >= 2:
             seen.add(upper)
             tickers.append(upper)
 

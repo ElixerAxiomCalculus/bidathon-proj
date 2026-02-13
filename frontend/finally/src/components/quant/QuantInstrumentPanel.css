@@ -1,0 +1,176 @@
+/* ═══════════════════════════════════════════════════════════
+   LEFT PANEL — Instrument & Market Selector
+   ═══════════════════════════════════════════════════════════ */
+
+.qi-search {
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--qt-border);
+}
+
+.qi-search__input {
+    width: 100%;
+    padding: 6px 10px;
+    background: var(--qt-surface-2);
+    border: 1px solid var(--qt-border);
+    border-radius: var(--qt-radius);
+    color: var(--qt-text);
+    font-family: var(--qt-font-mono);
+    font-size: 12px;
+    outline: none;
+    transition: border-color var(--qt-transition);
+    box-sizing: border-box;
+}
+
+.qi-search__input:focus {
+    border-color: var(--qt-accent);
+}
+
+.qi-search__input::placeholder {
+    color: var(--qt-text-muted);
+}
+
+.qi-results {
+    max-height: 200px;
+    overflow-y: auto;
+    border-bottom: 1px solid var(--qt-border);
+}
+
+.qi-result-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 12px;
+    cursor: pointer;
+    transition: background var(--qt-transition);
+}
+
+.qi-result-item:hover {
+    background: var(--qt-surface-2);
+}
+
+.qi-result-item--active {
+    background: var(--qt-accent-dim);
+    border-left: 2px solid var(--qt-accent);
+}
+
+.qi-result-symbol {
+    font-family: var(--qt-font-mono);
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--qt-text-bright);
+}
+
+.qi-result-name {
+    font-size: 10px;
+    color: var(--qt-text-dim);
+    margin-left: 8px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 120px;
+}
+
+.qi-result-exchange {
+    font-family: var(--qt-font-mono);
+    font-size: 9px;
+    color: var(--qt-text-muted);
+}
+
+/* ─── Quote Card ───────────────────────────────────────── */
+
+.qi-quote {
+    padding: 12px;
+    border-bottom: 1px solid var(--qt-border);
+}
+
+.qi-quote__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 8px;
+}
+
+.qi-quote__ticker {
+    font-family: var(--qt-font-mono);
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--qt-text-bright);
+}
+
+.qi-quote__price {
+    font-family: var(--qt-font-mono);
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.qi-quote__name {
+    font-size: 11px;
+    color: var(--qt-text-dim);
+    margin-bottom: 10px;
+}
+
+.qi-quote__grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4px 12px;
+}
+
+.qi-quote__row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 2px 0;
+}
+
+.qi-quote__label {
+    font-size: 10px;
+    color: var(--qt-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.qi-quote__value {
+    font-family: var(--qt-font-mono);
+    font-size: 11px;
+    color: var(--qt-text);
+}
+
+/* ─── Watchlist ─────────────────────────────────────────── */
+
+.qi-watchlist {
+    flex: 1;
+    overflow-y: auto;
+}
+
+.qi-watchlist-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 12px;
+    cursor: pointer;
+    transition: background var(--qt-transition);
+    border-bottom: 1px solid var(--qt-border);
+}
+
+.qi-watchlist-item:hover {
+    background: var(--qt-surface-2);
+}
+
+.qi-watchlist-sym {
+    font-family: var(--qt-font-mono);
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--qt-text-bright);
+}
+
+.qi-watchlist-price {
+    font-family: var(--qt-font-mono);
+    font-size: 11px;
+}
+
+.qi-empty {
+    padding: 20px 12px;
+    text-align: center;
+    font-size: 11px;
+    color: var(--qt-text-muted);
+}

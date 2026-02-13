@@ -1,0 +1,34 @@
+.dashboard {
+  width: 100%;
+  height: 100vh;
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  background: #020d18;
+  overflow: hidden;
+}
+
+.dashboard__body {
+  flex: 1;
+  display: flex;
+  overflow: hidden;
+  position: relative;
+}
+
+/* ─── Responsive ─── */
+@media (max-width: 768px) {
+  .dashboard__body {
+    position: relative;
+  }
+
+  /* On mobile, sidebar defaults to closed */
+  .dashboard {
+    --sidebar-default: closed;
+  }
+}
+
+@media (min-width: 769px) and (max-width: 1024px) {
+  .dashboard__body {
+    position: relative;
+  }
+}

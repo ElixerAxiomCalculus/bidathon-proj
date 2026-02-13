@@ -27,7 +27,7 @@ def save_interaction(
                             "response_summary": response_summary,
                         }
                     ],
-                    "$slice": -20,  # keep only last 20
+                    "$slice": -20,
                 }
             },
             "$set": {"user_id": user_id},

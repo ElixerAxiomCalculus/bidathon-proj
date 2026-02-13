@@ -22,7 +22,6 @@ def scrape_website(url):
 
         title = soup.title.string.strip() if soup.title and soup.title.string else 'No title found'
 
-        # Remove script and style elements for cleaner text
         for tag in soup(["script", "style", "nav", "footer", "header"]):
             tag.decompose()
 

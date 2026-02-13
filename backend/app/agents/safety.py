@@ -10,16 +10,14 @@ import re
 import time
 from collections import defaultdict
 
-# ── Financial Disclaimer ─────────────────────────────────────────────────────
 
 DISCLAIMER = (
     "\n\n---\n"
-    "⚠️ **Disclaimer:** This is AI-generated analysis for informational purposes only. "
+    "**Disclaimer:** This is AI-generated analysis for informational purposes only. "
     "It does NOT constitute financial advice. Always consult a qualified financial advisor "
     "before making investment decisions. Past performance does not guarantee future results."
 )
 
-# ── Risky Query Detection ────────────────────────────────────────────────────
 
 _RISKY_PATTERNS = [
     r"guarantee[d]?\s+(return|profit|money|income)",
@@ -63,8 +61,6 @@ def detect_risky_query(query: str) -> str | None:
     return None
 
 
-# ── Rate Limiter ─────────────────────────────────────────────────────────────
-
 _WINDOW_SECONDS = 60
 _MAX_REQUESTS = 20
 
@@ -80,7 +76,6 @@ def check_rate_limit(user_id: str) -> bool:
     now = time.time()
     window_start = now - _WINDOW_SECONDS
 
-    # Prune old timestamps
     _request_log[user_id] = [
         ts for ts in _request_log[user_id] if ts > window_start
     ]

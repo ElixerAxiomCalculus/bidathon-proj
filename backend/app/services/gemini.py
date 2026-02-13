@@ -38,7 +38,6 @@ def check_url_authenticity(url: str) -> dict:
     import json
 
     text = response.text.strip()
-    # Strip markdown code fences if present
     if text.startswith("```"):
         text = text.split("\n", 1)[1]
     if text.endswith("```"):

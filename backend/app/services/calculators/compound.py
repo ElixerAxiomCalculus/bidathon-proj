@@ -21,7 +21,6 @@ def calculate_compound_interest(
     final_amount = principal * ((1 + r / n) ** (n * t))
     interest_earned = final_amount - principal
 
-    # Effective annual rate
     effective_annual_rate = ((1 + r / n) ** n - 1) * 100
 
     return {

@@ -1,0 +1,412 @@
+/* ═══════════════════════════════════════════════════════════
+   RIGHT PANEL — Quant Strategy Lab
+   ═══════════════════════════════════════════════════════════ */
+
+.qs-section {
+    border-bottom: 1px solid var(--qt-border);
+}
+
+.qs-section__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 12px;
+    cursor: pointer;
+    user-select: none;
+    transition: background var(--qt-transition);
+}
+
+.qs-section__header:hover {
+    background: var(--qt-surface-2);
+}
+
+.qs-section__title {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.7px;
+    color: var(--qt-text-dim);
+}
+
+.qs-section__toggle {
+    font-family: var(--qt-font-mono);
+    font-size: 10px;
+    color: var(--qt-text-muted);
+}
+
+.qs-section__body {
+    padding: 8px 12px 12px;
+}
+
+/* ─── Strategy Selector ────────────────────────────────── */
+
+.qs-cat-label {
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--qt-accent);
+    margin-top: 6px;
+    margin-bottom: 4px;
+}
+
+.qs-strat-btn {
+    display: block;
+    width: 100%;
+    padding: 5px 8px;
+    margin-bottom: 2px;
+    background: none;
+    border: 1px solid transparent;
+    border-radius: var(--qt-radius);
+    color: var(--qt-text);
+    font-family: var(--qt-font-sans);
+    font-size: 11px;
+    text-align: left;
+    cursor: pointer;
+    transition: all var(--qt-transition);
+}
+
+.qs-strat-btn:hover {
+    background: var(--qt-surface-2);
+    border-color: var(--qt-border);
+}
+
+.qs-strat-btn--active {
+    background: var(--qt-accent-dim);
+    border-color: var(--qt-accent);
+    color: var(--qt-text-bright);
+}
+
+.qs-strat-desc {
+    font-size: 10px;
+    color: var(--qt-text-muted);
+    margin-top: 1px;
+    line-height: 1.3;
+}
+
+/* ─── Controls ─────────────────────────────────────────── */
+
+.qs-controls {
+    display: flex;
+    gap: 6px;
+    margin-top: 8px;
+}
+
+.qs-btn {
+    flex: 1;
+    padding: 6px 10px;
+    border: 1px solid var(--qt-border);
+    border-radius: var(--qt-radius);
+    font-family: var(--qt-font-sans);
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all var(--qt-transition);
+    text-align: center;
+}
+
+.qs-btn--primary {
+    background: var(--qt-accent);
+    border-color: var(--qt-accent);
+    color: #fff;
+}
+
+.qs-btn--primary:hover {
+    background: #2563eb;
+}
+
+.qs-btn--primary:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.qs-btn--secondary {
+    background: var(--qt-surface-2);
+    color: var(--qt-text);
+}
+
+.qs-btn--secondary:hover {
+    background: var(--qt-surface-3);
+    border-color: var(--qt-border-light);
+}
+
+.qs-btn--secondary:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.qs-btn--insight {
+    background: var(--qt-surface-2);
+    border-color: var(--qt-purple);
+    color: var(--qt-purple);
+}
+
+.qs-btn--insight:hover {
+    background: rgba(139, 92, 246, 0.1);
+}
+
+.qs-btn--insight:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+/* ─── Metrics Grid ─────────────────────────────────────── */
+
+.qs-metrics {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+    margin-top: 8px;
+}
+
+.qs-metric {
+    padding: 6px 8px;
+    background: var(--qt-surface-2);
+    border: 1px solid var(--qt-border);
+    border-radius: var(--qt-radius);
+}
+
+.qs-metric__label {
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--qt-text-muted);
+    margin-bottom: 2px;
+}
+
+.qs-metric__value {
+    font-family: var(--qt-font-mono);
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--qt-text-bright);
+}
+
+.qs-metric--full {
+    grid-column: 1 / -1;
+}
+
+.qs-verdict {
+    margin-top: 8px;
+    padding: 8px 10px;
+    background: var(--qt-surface-2);
+    border: 1px solid var(--qt-border);
+    border-radius: var(--qt-radius);
+    font-size: 11px;
+    line-height: 1.5;
+    color: var(--qt-text);
+}
+
+.qs-verdict__label {
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--qt-text-muted);
+    margin-bottom: 4px;
+}
+
+/* ─── Risk Badge ───────────────────────────────────────── */
+
+.qs-risk {
+    display: inline-block;
+    padding: 1px 6px;
+    border-radius: 2px;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+}
+
+.qs-risk--low {
+    color: var(--qt-green);
+    background: var(--qt-green-dim);
+}
+
+.qs-risk--moderate {
+    color: var(--qt-yellow);
+    background: var(--qt-yellow-dim);
+}
+
+.qs-risk--high {
+    color: var(--qt-red);
+    background: var(--qt-red-dim);
+}
+
+/* ─── Signals Log ──────────────────────────────────────── */
+
+.qs-signals {
+    max-height: 150px;
+    overflow-y: auto;
+}
+
+.qs-signal-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 3px 0;
+    border-bottom: 1px solid rgba(37, 40, 48, 0.5);
+    font-family: var(--qt-font-mono);
+    font-size: 10px;
+}
+
+.qs-signal-date {
+    color: var(--qt-text-dim);
+    width: 80px;
+}
+
+.qs-signal-type {
+    font-weight: 600;
+    width: 40px;
+    text-align: center;
+}
+
+.qs-signal-type--buy {
+    color: var(--qt-green);
+}
+
+.qs-signal-type--sell {
+    color: var(--qt-red);
+}
+
+.qs-signal-price {
+    color: var(--qt-text);
+    text-align: right;
+    flex: 1;
+}
+
+/* ─── Backtest ─────────────────────────────────────────── */
+
+.qs-equity-chart {
+    width: 100%;
+    height: 100px;
+    margin-top: 6px;
+    background: var(--qt-surface-2);
+    border: 1px solid var(--qt-border);
+    border-radius: var(--qt-radius);
+    overflow: hidden;
+    position: relative;
+}
+
+.qs-equity-svg {
+    width: 100%;
+    height: 100%;
+}
+
+.qs-equity-path {
+    fill: none;
+    stroke-width: 1.5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.qs-equity-fill {
+    opacity: 0.15;
+}
+
+.qs-bt-summary {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 6px;
+    font-family: var(--qt-font-mono);
+    font-size: 11px;
+}
+
+.qs-bt-label {
+    color: var(--qt-text-muted);
+    font-size: 9px;
+    text-transform: uppercase;
+}
+
+.qs-bt-value {
+    font-weight: 600;
+}
+
+/* ─── Insight ──────────────────────────────────────────── */
+
+.qs-insight {
+    margin-top: 8px;
+    padding: 10px;
+    background: var(--qt-surface-2);
+    border: 1px solid var(--qt-purple);
+    border-radius: var(--qt-radius);
+}
+
+.qs-insight__label {
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--qt-purple);
+    margin-bottom: 6px;
+}
+
+.qs-insight__text {
+    font-size: 11px;
+    line-height: 1.6;
+    color: var(--qt-text);
+}
+
+.qs-insight__disclaimer {
+    margin-top: 8px;
+    font-size: 9px;
+    color: var(--qt-text-muted);
+    font-style: italic;
+    line-height: 1.4;
+}
+
+/* ─── Loading ──────────────────────────────────────────── */
+
+.qs-loading {
+    text-align: center;
+    padding: 16px;
+    font-family: var(--qt-font-mono);
+    font-size: 11px;
+    color: var(--qt-text-dim);
+}
+
+@keyframes qs-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.qs-spinner {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    border: 2px solid var(--qt-border);
+    border-top-color: var(--qt-accent);
+    border-radius: 50%;
+    animation: qs-spin 0.8s linear infinite;
+    margin-right: 6px;
+    vertical-align: middle;
+}
+
+/* ─── Trade Log Table ──────────────────────────────────── */
+
+.qs-trades {
+    max-height: 120px;
+    overflow-y: auto;
+    margin-top: 6px;
+}
+
+.qs-trade-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 2px 0;
+    border-bottom: 1px solid rgba(37, 40, 48, 0.5);
+    font-family: var(--qt-font-mono);
+    font-size: 10px;
+}
+
+.qs-trade-date {
+    color: var(--qt-text-dim);
+    width: 70px;
+}
+
+.qs-trade-type {
+    width: 40px;
+    font-weight: 600;
+}
+
+.qs-trade-pnl {
+    flex: 1;
+    text-align: right;
+}

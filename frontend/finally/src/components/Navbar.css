@@ -1,0 +1,247 @@
+.navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  padding: 1.25rem 2rem;
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.navbar--scrolled {
+  background: rgba(2, 13, 24, 0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  padding: 0.75rem 2rem;
+  border-bottom: 1px solid rgba(4, 102, 200, 0.1);
+}
+
+.navbar__inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.navbar__logo {
+  font-family: 'Inter', sans-serif;
+  font-weight: 400;
+  font-size: 1.5rem;
+  letter-spacing: -0.03em;
+  text-decoration: none;
+  cursor: pointer;
+  transition: opacity 0.3s ease;
+}
+
+.navbar__logo:hover {
+  opacity: 0.8;
+}
+
+.navbar__logo-fin {
+  color: #ffffff;
+}
+
+.navbar__logo-ally {
+  color: #0466C8;
+}
+
+.navbar__logo-bytestorm {
+  font-weight: 300;
+  font-size: 0.55rem;
+  color: rgba(255, 255, 255, 0.35);
+  letter-spacing: 0.06em;
+  vertical-align: baseline;
+}
+
+.navbar__links-desktop {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+}
+
+.navbar__link {
+  font-family: 'Inter', sans-serif;
+  font-weight: 400;
+  font-size: 0.875rem;
+  color: rgba(255, 255, 255, 0.6);
+  text-decoration: none;
+  letter-spacing: 0.02em;
+  transition: color 0.3s ease;
+  position: relative;
+}
+
+.navbar__link::after {
+  content: '';
+  position: absolute;
+  bottom: -4px;
+  left: 0;
+  width: 0;
+  height: 1px;
+  background: #0466C8;
+  transition: width 0.3s ease;
+}
+
+.navbar__link:hover {
+  color: #ffffff;
+}
+
+.navbar__link:hover::after {
+  width: 100%;
+}
+
+.navbar__actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.navbar__btn {
+  font-family: 'Inter', sans-serif;
+  font-weight: 400;
+  font-size: 0.8125rem;
+  letter-spacing: 0.03em;
+  padding: 0.5rem 1.25rem;
+  border-radius: 2px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+}
+
+.navbar__btn--ghost {
+  background: transparent;
+  color: rgba(255, 255, 255, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.navbar__btn--ghost:hover {
+  color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.4);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.navbar__btn--primary {
+  background: #0466C8;
+  color: #ffffff;
+  border: 1px solid #0466C8;
+}
+
+.navbar__btn--primary:hover {
+  background: #0353a4;
+  border-color: #0353a4;
+}
+
+/* Hamburger (mobile only) */
+.navbar__hamburger {
+  display: none;
+  flex-direction: column;
+  gap: 6px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 6px;
+  z-index: 1001;
+}
+
+.navbar__hamburger-line {
+  display: block;
+  width: 24px;
+  height: 1px;
+  background: #ffffff;
+  transition: transform 0.3s ease, opacity 0.2s ease;
+  transform-origin: center;
+}
+
+.navbar__hamburger--open .navbar__hamburger-line:first-child {
+  transform: translateY(3.5px) rotate(45deg);
+}
+
+.navbar__hamburger--open .navbar__hamburger-line:last-child {
+  transform: translateY(-3.5px) rotate(-45deg);
+}
+
+/* Mobile menu */
+.navbar__mobile-menu {
+  display: none;
+  flex-direction: column;
+  gap: 1.5rem;
+  padding: 2rem;
+  background: rgba(2, 13, 24, 0.98);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  border-bottom: 1px solid rgba(4, 102, 200, 0.15);
+}
+
+.navbar__mobile-link {
+  font-family: 'Inter', sans-serif;
+  font-weight: 400;
+  font-size: 1.125rem;
+  color: rgba(255, 255, 255, 0.7);
+  text-decoration: none;
+  letter-spacing: 0.02em;
+  transition: color 0.3s ease;
+}
+
+.navbar__mobile-link:hover {
+  color: #0466C8;
+}
+
+.navbar__mobile-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.navbar__mobile-actions .navbar__btn {
+  width: 100%;
+  text-align: center;
+  padding: 0.75rem 1.25rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .navbar {
+    padding: 1rem 1.25rem;
+  }
+
+  .navbar--scrolled {
+    padding: 0.6rem 1.25rem;
+  }
+
+  .navbar__links-desktop {
+    display: none;
+  }
+
+  .navbar__actions {
+    display: none;
+  }
+
+  .navbar__hamburger {
+    display: flex;
+  }
+
+  .navbar__mobile-menu {
+    display: flex;
+  }
+}
+
+@media (min-width: 769px) and (max-width: 1024px) {
+  .navbar {
+    padding: 1rem 1.5rem;
+  }
+
+  .navbar__link {
+    font-size: 0.8125rem;
+  }
+
+  .navbar__btn {
+    font-size: 0.75rem;
+    padding: 0.45rem 1rem;
+  }
+}

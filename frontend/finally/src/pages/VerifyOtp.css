@@ -1,0 +1,162 @@
+.otp-page {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  min-height: 100dvh;
+  background: #020d18;
+  padding: 2rem;
+}
+
+.otp-card {
+  width: 100%;
+  max-width: 420px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 8px;
+  padding: 2.5rem 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.otp-card__title {
+  font-family: 'Inter', sans-serif;
+  font-weight: 300;
+  font-size: 1.6rem;
+  color: #ffffff;
+  margin: 0;
+  letter-spacing: -0.02em;
+}
+
+.otp-card__desc {
+  font-family: 'Inter', sans-serif;
+  font-weight: 300;
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.45);
+  text-align: center;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.otp-card__email {
+  color: #0466C8;
+  font-weight: 400;
+}
+
+.otp-inputs {
+  display: flex;
+  gap: 0.6rem;
+  justify-content: center;
+}
+
+.otp-inputs input {
+  width: 46px;
+  height: 54px;
+  text-align: center;
+  font-family: 'Inter', sans-serif;
+  font-weight: 400;
+  font-size: 1.3rem;
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  caret-color: #0466C8;
+}
+
+.otp-inputs input:focus {
+  border-color: #0466C8;
+  box-shadow: 0 0 0 3px rgba(4, 102, 200, 0.12);
+}
+
+.otp-error {
+  background: rgba(220, 38, 38, 0.1);
+  border: 1px solid rgba(220, 38, 38, 0.3);
+  color: #fca5a5;
+  padding: 0.6rem 0.9rem;
+  border-radius: 4px;
+  font-size: 0.82rem;
+  font-family: 'Inter', sans-serif;
+  width: 100%;
+  text-align: center;
+}
+
+.otp-success {
+  background: rgba(34, 197, 94, 0.1);
+  border: 1px solid rgba(34, 197, 94, 0.3);
+  color: #86efac;
+  padding: 0.6rem 0.9rem;
+  border-radius: 4px;
+  font-size: 0.82rem;
+  font-family: 'Inter', sans-serif;
+  width: 100%;
+  text-align: center;
+}
+
+.otp-submit {
+  font-family: 'Inter', sans-serif;
+  font-weight: 400;
+  font-size: 0.85rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  background: #0466C8;
+  color: #ffffff;
+  border: 1px solid #0466C8;
+  border-radius: 4px;
+  padding: 0.75rem 2rem;
+  cursor: pointer;
+  transition: background 0.3s ease, opacity 0.2s ease;
+  width: 100%;
+}
+
+.otp-submit:hover {
+  background: #0353a4;
+}
+
+.otp-submit:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.otp-resend {
+  font-family: 'Inter', sans-serif;
+  font-weight: 300;
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.otp-resend button {
+  background: none;
+  border: none;
+  color: #0466C8;
+  font-family: 'Inter', sans-serif;
+  font-weight: 400;
+  font-size: 0.8rem;
+  cursor: pointer;
+  text-decoration: underline;
+  padding: 0;
+  margin-left: 0.25rem;
+}
+
+.otp-resend button:disabled {
+  color: rgba(255, 255, 255, 0.2);
+  cursor: not-allowed;
+  text-decoration: none;
+}
+
+.otp-back {
+  font-family: 'Inter', sans-serif;
+  font-weight: 300;
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.35);
+  text-decoration: none;
+  transition: color 0.2s ease;
+  margin-top: 0.5rem;
+}
+
+.otp-back:hover {
+  color: rgba(255, 255, 255, 0.6);
+}

@@ -1,0 +1,165 @@
+/* ─── Stock Chart Container ─── */
+.stock-chart {
+  margin-top: 0.75rem;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+/* ─── Header ─── */
+.stock-chart__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.stock-chart__header-left {
+  display: flex;
+  align-items: baseline;
+  gap: 0.625rem;
+}
+
+.stock-chart__ticker {
+  font-family: 'Inter', monospace;
+  font-weight: 600;
+  font-size: 0.875rem;
+  color: #ffffff;
+  letter-spacing: 0.04em;
+}
+
+.stock-chart__price {
+  font-family: 'Inter', sans-serif;
+  font-weight: 500;
+  font-size: 0.8125rem;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.stock-chart__change {
+  font-family: 'Inter', sans-serif;
+  font-weight: 500;
+  font-size: 0.75rem;
+}
+
+.stock-chart__green {
+  color: #00c853;
+}
+
+.stock-chart__red {
+  color: #ff1744;
+}
+
+.stock-chart__header-right {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+}
+
+.stock-chart__period {
+  font-family: 'Inter', sans-serif;
+  font-weight: 400;
+  font-size: 0.6875rem;
+  color: rgba(255, 255, 255, 0.3);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  background: rgba(255, 255, 255, 0.04);
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+}
+
+.stock-chart__view-toggle {
+  display: flex;
+  gap: 2px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 4px;
+  padding: 2px;
+}
+
+.stock-chart__view-btn {
+  font-size: 0.6875rem;
+  padding: 0.25rem 0.4rem;
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.3);
+  cursor: pointer;
+  border-radius: 3px;
+  transition: all 0.2s ease;
+  line-height: 1;
+}
+
+.stock-chart__view-btn:hover {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.stock-chart__view-btn--active {
+  color: #0466C8;
+  background: rgba(4, 102, 200, 0.12);
+}
+
+/* ─── Chart Canvas ─── */
+.stock-chart__canvas {
+  padding: 0.25rem 0.5rem 0;
+}
+
+/* ─── Footer ─── */
+.stock-chart__footer {
+  padding: 0.375rem 1rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.stock-chart__footer-label {
+  font-family: 'Inter', sans-serif;
+  font-weight: 400;
+  font-size: 0.625rem;
+  color: rgba(255, 255, 255, 0.2);
+}
+
+/* ─── Tooltip ─── */
+.stock-chart__tooltip {
+  background: rgba(10, 20, 35, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  padding: 0.5rem 0.625rem;
+  backdrop-filter: blur(8px);
+}
+
+.stock-chart__tooltip-date {
+  font-family: 'Inter', sans-serif;
+  font-weight: 500;
+  font-size: 0.6875rem;
+  color: rgba(255, 255, 255, 0.5);
+  margin: 0 0 0.25rem;
+}
+
+.stock-chart__tooltip-grid {
+  display: grid;
+  grid-template-columns: auto auto;
+  gap: 0.125rem 0.5rem;
+  font-family: 'Inter', monospace;
+  font-size: 0.6875rem;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.stock-chart__tooltip-price {
+  font-family: 'Inter', monospace;
+  font-weight: 600;
+  font-size: 0.8125rem;
+  color: #ffffff;
+  margin: 0;
+}
+
+/* ─── Responsive ─── */
+@media (max-width: 768px) {
+  .stock-chart__header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.375rem;
+  }
+
+  .stock-chart__header-right {
+    width: 100%;
+    justify-content: space-between;
+  }
+}
