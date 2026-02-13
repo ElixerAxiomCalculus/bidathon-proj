@@ -1,4 +1,4 @@
-const BASE_URL = 'http://localhost:8000';
+const BASE_URL = 'https://bidathon-proj.onrender.com';
 
 const TOKEN_KEY = 'finally_token';
 const USER_KEY = 'finally_user';
