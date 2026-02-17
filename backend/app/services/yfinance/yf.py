@@ -1,10 +1,44 @@
 from datetime import datetime, timedelta
 from typing import Optional
 import requests
+
+import os
+import shutil
+import functools
 import yfinance as yf
 
 
+def clear_yfinance_cache():
+    """Clear internal yfinance cache to resolve cookie/crumb issues."""
+    cache_dir = os.path.join(os.path.expanduser("~"), ".cache", "yfinance")
+    if os.path.exists(cache_dir):
+        try:
+            shutil.rmtree(cache_dir)
+            print(f"[YF] Cleared cache at {cache_dir}")
+        except Exception as e:
+            print(f"[YF WARNING] Failed to clear cache: {e}")
 
+# Clear cache on module load to ensure fresh start
+clear_yfinance_cache()
+
+
+def retry_on_yf_error(func):
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        try:
+            return func(*args, **kwargs)
+        except Exception as e:
+            # Check for common "crumb" or "401" errors in the exception message
+            msg = str(e).lower()
+            if "crumb" in msg or "401" in msg or "unauthorized" in msg:
+                print(f"[YF RETRY] Detected authentication error ({e}). Clearing cache and retrying...")
+                clear_yfinance_cache()
+                return func(*args, **kwargs)
+            raise e
+    return wrapper
+
+
+@retry_on_yf_error
 def get_stock_quote(ticker: str) -> dict:
     """Get the current/latest quote for a stock ticker."""
     try:
@@ -39,6 +73,8 @@ def get_stock_quote(ticker: str) -> dict:
         raise
 
 
+
+@retry_on_yf_error
 def get_stock_history(
     ticker: str,
     period: str = "1mo",
@@ -66,6 +102,7 @@ def get_stock_history(
     return records
 
 
+@retry_on_yf_error
 def get_company_info(ticker: str) -> dict:
     """Get detailed company information."""
     stock = yf.Ticker(ticker)

@@ -73,14 +73,24 @@ def classify_query(query: str) -> ClassificationResult:
         )
         data = _clean_json_response(response_text)
         
+
         # Validate intent
-        intent_str = data.get("intent", "").lower()
-        if intent_str not in [i.value for i in Intent]:
-            # Try to fuzzily match or default
-            intent_str = Intent.GENERAL_FINANCE
-            
+        intent_val = data.get("intent", "").lower()
+        classification = Intent.GENERAL_FINANCE
+        
+        # Try to match the LLM string to our Enum
+        try:
+            # First direct match
+            if intent_val in [i.value for i in Intent]:
+                classification = Intent(intent_val)
+            else:
+                # Fuzzy fallback or just default
+                classification = Intent.GENERAL_FINANCE
+        except ValueError:
+            classification = Intent.GENERAL_FINANCE
+
         return {
-            "intent": intent_str,
+            "intent": classification,
             "tickers": data.get("tickers", []),
             "reasoning": data.get("reasoning", "LLM processing")
         }
