@@ -5,11 +5,19 @@ import yfinance as yf
 
 
 def _get_session():
-    """Create a session with a browser User-Agent to avoid 401/404 errors."""
+    """Create a session with a browser User-Agent and prime cookies."""
     session = requests.Session()
     session.headers.update({
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8",
+        "Accept-Language": "en-US,en;q=0.9",
+        "Referer": "https://finance.yahoo.com/",
     })
+    # Prime cookies by visiting the homepage
+    try:
+        session.get("https://finance.yahoo.com", timeout=5)
+    except Exception:
+        pass # Ignore initialization errors, yfinance might still work or fail gracefully later
     return session
 
 
