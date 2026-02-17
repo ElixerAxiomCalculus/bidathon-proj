@@ -4,28 +4,11 @@ import requests
 import yfinance as yf
 
 
-def _get_session():
-    """Create a session with a browser User-Agent and prime cookies."""
-    session = requests.Session()
-    session.headers.update({
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8",
-        "Accept-Language": "en-US,en;q=0.9",
-        "Referer": "https://finance.yahoo.com/",
-    })
-    # Prime cookies by visiting the homepage
-    try:
-        session.get("https://finance.yahoo.com", timeout=5)
-    except Exception:
-        pass # Ignore initialization errors, yfinance might still work or fail gracefully later
-    return session
-
 
 def get_stock_quote(ticker: str) -> dict:
     """Get the current/latest quote for a stock ticker."""
     try:
-        session = _get_session()
-        stock = yf.Ticker(ticker, session=session)
+        stock = yf.Ticker(ticker)
         info = stock.info
         
         # Debug logging
@@ -67,8 +50,7 @@ def get_stock_history(
     period  : 1d, 5d, 1mo, 3mo, 6mo, 1y, 2y, 5y, 10y, ytd, max
     interval: 1m, 2m, 5m, 15m, 30m, 60m, 90m, 1h, 1d, 5d, 1wk, 1mo, 3mo
     """
-    session = _get_session()
-    stock = yf.Ticker(ticker, session=session)
+    stock = yf.Ticker(ticker)
     hist = stock.history(period=period, interval=interval)
 
     records = []
@@ -86,8 +68,7 @@ def get_stock_history(
 
 def get_company_info(ticker: str) -> dict:
     """Get detailed company information."""
-    session = _get_session()
-    stock = yf.Ticker(ticker, session=session)
+    stock = yf.Ticker(ticker)
     info = stock.info
 
     return {
@@ -106,14 +87,6 @@ def get_company_info(ticker: str) -> dict:
 
 def search_ticker(query: str) -> list[dict]:
     """Search for a stock ticker by company name or partial ticker."""
-    # yf.Search does not readily accept a session in all versions, 
-    # but strictly speaking user-agent might be less critical for search 
-    # or it might share global config. 
-    # However, newer yfinance uses `requests` internally.
-    # We can try to rely on yf.Ticker's session passing or global override if needed.
-    # For now, let's just use it as is, or use the Ticker class if possible.
-    # yf.Search is distinct. Let's try to monkeypatch or just leave it if it works locally.
-    # Actually, let's keep it simple for search as it might be using a different endpoint.
     search = yf.Search(query, max_results=10)
     quotes = search.quotes
     return [
