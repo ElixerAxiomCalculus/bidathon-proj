@@ -23,27 +23,37 @@ def _get_session():
 
 def get_stock_quote(ticker: str) -> dict:
     """Get the current/latest quote for a stock ticker."""
-    session = _get_session()
-    stock = yf.Ticker(ticker, session=session)
-    info = stock.info
+    try:
+        session = _get_session()
+        stock = yf.Ticker(ticker, session=session)
+        info = stock.info
+        
+        # Debug logging
+        if not info:
+            print(f"[YF ERROR] Info empty for {ticker}")
+        elif "symbol" not in info and "shortName" not in info:
+             print(f"[YF WARNING] Incomplete info for {ticker}: {list(info.keys())}")
 
-    return {
-        "ticker": ticker.upper(),
-        "name": info.get("shortName") or info.get("longName"),
-        "price": info.get("currentPrice") or info.get("regularMarketPrice"),
-        "previous_close": info.get("previousClose"),
-        "open": info.get("open") or info.get("regularMarketOpen"),
-        "day_high": info.get("dayHigh") or info.get("regularMarketDayHigh"),
-        "day_low": info.get("dayLow") or info.get("regularMarketDayLow"),
-        "volume": info.get("volume") or info.get("regularMarketVolume"),
-        "market_cap": info.get("marketCap"),
-        "pe_ratio": info.get("trailingPE"),
-        "dividend_yield": info.get("dividendYield"),
-        "52_week_high": info.get("fiftyTwoWeekHigh"),
-        "52_week_low": info.get("fiftyTwoWeekLow"),
-        "currency": info.get("currency"),
-        "exchange": info.get("exchange"),
-    }
+        return {
+            "ticker": ticker.upper(),
+            "name": info.get("shortName") or info.get("longName"),
+            "price": info.get("currentPrice") or info.get("regularMarketPrice"),
+            "previous_close": info.get("previousClose"),
+            "open": info.get("open") or info.get("regularMarketOpen"),
+            "day_high": info.get("dayHigh") or info.get("regularMarketDayHigh"),
+            "day_low": info.get("dayLow") or info.get("regularMarketDayLow"),
+            "volume": info.get("volume") or info.get("regularMarketVolume"),
+            "market_cap": info.get("marketCap"),
+            "pe_ratio": info.get("trailingPE"),
+            "dividend_yield": info.get("dividendYield"),
+            "52_week_high": info.get("fiftyTwoWeekHigh"),
+            "52_week_low": info.get("fiftyTwoWeekLow"),
+            "currency": info.get("currency"),
+            "exchange": info.get("exchange"),
+        }
+    except Exception as e:
+        print(f"[YF EXCEPTION] Failed to get quote for {ticker}: {e}")
+        raise
 
 
 def get_stock_history(
