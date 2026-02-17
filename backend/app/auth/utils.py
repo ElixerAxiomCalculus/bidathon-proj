@@ -56,6 +56,13 @@ def generate_otp() -> tuple[str, float]:
 
 def verify_otp(stored_otp: str, stored_expiry: float, submitted_otp: str) -> bool:
     """Check OTP matches and hasn't expired."""
-    if time.time() > stored_expiry:
+    if not stored_otp:
         return False
-    return stored_otp == submitted_otp
+    if time.time() > stored_expiry:
+        print(f"[OTP FAIL] Expired. Current: {time.time()}, Expiry: {stored_expiry}")
+        return False
+    
+    match = stored_otp.strip() == submitted_otp.strip()
+    if not match:
+        print(f"[OTP FAIL] Mismatch. Stored: '{stored_otp}', Submitted: '{submitted_otp}'")
+    return match

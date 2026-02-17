@@ -123,7 +123,9 @@ def verify_otp_route(body: OtpVerifyRequest):
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
 
-    if not verify_otp(user.get("otp", ""), user.get("otp_expiry", 0), body.otp):
+    is_valid = verify_otp(user.get("otp", ""), user.get("otp_expiry", 0), body.otp)
+    if not is_valid:
+        print(f"[AUTH ERROR] OTP Verification failed for {body.email}")
         raise HTTPException(status_code=400, detail="Invalid or expired OTP")
 
     db["users"].update_one(
