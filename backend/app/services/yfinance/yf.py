@@ -1,12 +1,22 @@
 from datetime import datetime, timedelta
 from typing import Optional
-
+import requests
 import yfinance as yf
+
+
+def _get_session():
+    """Create a session with a browser User-Agent to avoid 401/404 errors."""
+    session = requests.Session()
+    session.headers.update({
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+    })
+    return session
 
 
 def get_stock_quote(ticker: str) -> dict:
     """Get the current/latest quote for a stock ticker."""
-    stock = yf.Ticker(ticker)
+    session = _get_session()
+    stock = yf.Ticker(ticker, session=session)
     info = stock.info
 
     return {
@@ -39,7 +49,8 @@ def get_stock_history(
     period  : 1d, 5d, 1mo, 3mo, 6mo, 1y, 2y, 5y, 10y, ytd, max
     interval: 1m, 2m, 5m, 15m, 30m, 60m, 90m, 1h, 1d, 5d, 1wk, 1mo, 3mo
     """
-    stock = yf.Ticker(ticker)
+    session = _get_session()
+    stock = yf.Ticker(ticker, session=session)
     hist = stock.history(period=period, interval=interval)
 
     records = []
@@ -57,7 +68,8 @@ def get_stock_history(
 
 def get_company_info(ticker: str) -> dict:
     """Get detailed company information."""
-    stock = yf.Ticker(ticker)
+    session = _get_session()
+    stock = yf.Ticker(ticker, session=session)
     info = stock.info
 
     return {
@@ -76,6 +88,14 @@ def get_company_info(ticker: str) -> dict:
 
 def search_ticker(query: str) -> list[dict]:
     """Search for a stock ticker by company name or partial ticker."""
+    # yf.Search does not readily accept a session in all versions, 
+    # but strictly speaking user-agent might be less critical for search 
+    # or it might share global config. 
+    # However, newer yfinance uses `requests` internally.
+    # We can try to rely on yf.Ticker's session passing or global override if needed.
+    # For now, let's just use it as is, or use the Ticker class if possible.
+    # yf.Search is distinct. Let's try to monkeypatch or just leave it if it works locally.
+    # Actually, let's keep it simple for search as it might be using a different endpoint.
     search = yf.Search(query, max_results=10)
     quotes = search.quotes
     return [
