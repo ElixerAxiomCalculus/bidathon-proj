@@ -15,7 +15,7 @@ load_dotenv(os.path.join(os.path.dirname(__file__), "..", "..", ".env"))
 
 SECRET_KEY = os.getenv("JWT_SECRET", "b1d@th0n-f1n@lly-s3cret-2026")
 ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_HOURS = 24
+ACCESS_TOKEN_EXPIRE_HOURS = 2880
 
 
 def hash_password(password: str) -> str:
