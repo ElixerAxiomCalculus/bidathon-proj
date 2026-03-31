@@ -7,7 +7,7 @@ load_dotenv(os.path.join(os.path.dirname(__file__), "..", "..", ".env"))
 RESEND_API_KEY = os.getenv("RESEND_API_KEY")
 # If using a verified domain, change this. Otherwise, use 'onboarding@resend.dev' for testing.
 # For production usage with a custom domain, update this env var or string.
-FROM_EMAIL = os.getenv("FROM_EMAIL", "onboarding@resend.dev") 
+FROM_EMAIL = os.getenv("FROM_EMAIL", "official@theprojectpsi.com") 
 
 if RESEND_API_KEY:
     resend.api_key = RESEND_API_KEY
