@@ -14,3 +14,7 @@ __pycache__/
 .venv/
 venv/
 backend/.venv/
+
+# Large files
+*.mp4
+frontend/finally/public/Video Project.mp4

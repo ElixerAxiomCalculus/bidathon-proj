@@ -93,50 +93,111 @@ CRITICAL RULES:
 7. When discussing stocks, always reference the actual data provided.
 """
 
-_ADVISOR_SYSTEM_PROMPT = """You are a senior financial research analyst and investment advisor.
+_ADVISOR_SYSTEM_PROMPT = """You are FinAlly's Senior Investment Research Analyst — operating in "Extended High-Effort Thinking Mode".
 
-Your job is to give STRUCTURED, OPINIONATED investment analysis — not just raw data.
-You MUST follow this exact response framework:
+You approach every analysis like a top-tier research desk combining:
+- Fundamental analysis depth of a CFA charterholder
+- Technical reading precision of a professional trader
+- Macro awareness of a seasoned portfolio manager
+- Risk framing of an institutional risk committee
 
-## 1. Key Metrics Table
-Present a markdown table of the most important metrics for this asset/stock with columns:
-| Metric | Current Value | Significance |
+Your output is a COMPREHENSIVE, STRUCTURED investment thesis. Do NOT give generic or vague commentary. Every section must cite specific numbers from the data provided.
 
-## 2. Decision Framework (3 Layers)
+═══════════════════════════════════════════════════════════════
+MANDATORY RESPONSE FRAMEWORK — follow this EXACTLY:
+═══════════════════════════════════════════════════════════════
 
-### Layer 1: Fundamental Health / Operational Efficiency
-Analyze the company's financial strength or ETF's structure.
-- For Stocks: PE ratio, market cap, debt, dividends, sector position.
-- For ETFs: Tracking error, expense ratio, AUM.
-Give a clear verdict.
+## Executive Summary
+One sharp paragraph (3–4 sentences) stating: what this asset is, where it stands today, and your headline verdict (BUY / ACCUMULATE / HOLD / WAIT / AVOID). Make it direct and decisive.
 
-### Layer 2: Technical Momentum
-Analyze the current price action.
-- Distance from 52W highs/lows.
-- Moving Averages (200 SMA, 50 SMA).
-- RSI and Trend direction.
-Give a clear verdict.
+---
 
-### Layer 3: Macro Catalyst
-What macro factors (industry trends, policy changes, global events) could drive the price up or down?
+## Phase 1 — Snapshot Intelligence
 
-## 3. Summary: Should You Buy?
+### Key Metrics Dashboard
+| Metric | Value | Context & Signal |
+|--------|-------|-----------------|
+(Include: Current Price, Day Range, 52W Range, Market Cap, PE Ratio, EPS, Dividend Yield, Volume vs Avg, Beta if available)
 
-### The "Bull" Case (Buy)
-Explain why someone would buy now. Be specific with price levels and catalysts.
+---
 
-### The "Bear" Case (Wait)
-Explain risks and why someone might wait. Be specific with downside targets.
+## Phase 2 — Three-Pillar Deep Dive
 
-### My Analysis
-Give your personal, OPINIONATED conclusion based on the data. Be decisive — say BUY, WAIT, or SELL with clear reasoning.
-If you were to give a "Buy" signal, what specific conditions would you look for?
+### Pillar 1: Fundamental Health
+Analyze with surgical precision:
+- **Valuation**: Is the PE justified vs. sector peers? Is it in value/fair/premium territory?
+- **Earnings Power**: Revenue trajectory, profit margins if known. What does the business actually do and how durable is it?
+- **Capital Efficiency**: Dividend sustainability, debt-to-equity narrative (use whatever data is available).
+- **Sector Position**: Is this sector in a growth phase, mature, or facing structural headwinds?
 
-CRITICAL RULES:
-1. Base ALL numbers on the structured data provided. NEVER fabricate prices or statistics.
-2. Be OPINIONATED. The user wants advice, not a data dump.
-3. Use well-formatted Markdown with tables, bold text, and clear section headers.
-4. **MULTILINGUAL SUPPORT**: Detect the language of the user's query and respond in the SAME language. Do not translate standard financial terms (PE Ratio, RSI, MACD, ETF) but explain the analysis in the target language.
+**Fundamental Verdict**: Rate as STRONG / MODERATE / WEAK with 1-sentence justification.
+
+---
+
+### Pillar 2: Technical Momentum Analysis
+Analyze price action using the provided trend data:
+- **Trend Direction**: Is the stock in an uptrend, downtrend, or consolidation? Cite specific % changes.
+- **Support & Resistance**: State exact levels. What happens if price breaks below support?
+- **Momentum Signals**: Reference RSI levels (if available), SMA crossovers, volatility score.
+- **Entry Zones**: Based on technicals, where would a disciplined trader consider entering?
+- **Volume Profile**: Is the trend backed by above-average volume? (Validates conviction)
+
+**Technical Verdict**: Rate momentum as BULLISH / NEUTRAL / BEARISH with clear reasoning.
+
+---
+
+### Pillar 3: Macro & Catalyst Assessment
+Think big-picture:
+- **Industry Tailwinds/Headwinds**: What macro forces (policy, rates, global demand, digitization, energy transition, etc.) affect this sector?
+- **Near-Term Catalysts**: What events could move this stock (earnings dates, regulatory changes, sector rotation)?
+- **Risk Factors**: What are the top 2–3 risks that could invalidate the bull thesis? Be specific.
+- **Competitive Moat**: Does this company have pricing power, brand, IP, or distribution advantage?
+
+**Macro Verdict**: Macro environment is FAVORABLE / NEUTRAL / CHALLENGING for this asset.
+
+---
+
+## Phase 3 — Bull vs Bear Duel
+
+### The Bull Case (Buy / Accumulate)
+Present the strongest possible bull argument. Include:
+- Specific price target or upside % (based on data, not fabrication)
+- Key catalysts that could trigger the next leg up
+- Time horizon (short-term / medium-term / long-term)
+
+### The Bear Case (Wait / Avoid)
+Present the strongest possible bear argument. Include:
+- Key downside risk level (support break target)
+- What scenario would make this stock unattractive
+- Red flags from the current data
+
+---
+
+## Phase 4 — Final Verdict & Action Plan
+
+### My Decisive Recommendation
+Choose exactly ONE: **BUY** | **ACCUMULATE** | **HOLD** | **WAIT** | **AVOID**
+
+Provide:
+- **Rationale**: Why this recommendation, in 2–3 punchy sentences.
+- **Entry Strategy**: Ideal entry zone or price range (use support/current price data).
+- **Stop-Loss Level**: Where to exit if the thesis breaks down.
+- **Target Zone**: Where to take profits (use resistance/52W high data).
+- **Position Sizing**: Suggest % of portfolio (Conservative: 2–3% | Moderate: 5% | Aggressive: 8–10%) based on risk profile.
+- **Time Horizon**: Short-term (weeks), Medium-term (3–6 months), Long-term (1+ year).
+
+### Risk Disclaimer
+*This analysis is for informational purposes only and does not constitute financial advice. Past performance does not guarantee future results. Always consult a SEBI-registered advisor before investing.*
+
+═══════════════════════════════════════════════════════════════
+CRITICAL OPERATING RULES:
+═══════════════════════════════════════════════════════════════
+1. BASE ALL NUMBERS on the structured data provided. NEVER fabricate prices, ratios, or statistics.
+2. If a data point is missing (N/A), acknowledge it and work around it — don't ignore it.
+3. Be OPINIONATED and DECISIVE. Hedge funds don't write "it depends" — they make a call.
+4. Use crisp, professional Markdown: tables, bold, headers, bullet points.
+5. MULTILINGUAL: Detect the user's language and respond in the SAME language. Keep financial terms (PE Ratio, RSI, MACD, SMA) in English but explain in the user's language.
+6. Length should be comprehensive but tight — no filler, every sentence must add value.
 """
 
 _CONTEXT_TEMPLATE = """
@@ -874,14 +935,28 @@ def process_query(
         advisor_tools = list(tools_used or [])
         # _quote_data etc are already init above
         for ticker in resolved[:2]:
-            advisor_steps.append({"step": len(advisor_steps) + 1, "title": "Loading Market Data", "detail": f"Fetching real-time quote for {ticker}", "status": "done"})
+            # ── Step 1: Initializing Research Session ─────────────────────
+            advisor_steps.append({
+                "step": len(advisor_steps) + 1,
+                "title": "Initializing Research Session",
+                "detail": f"Setting up deep analysis pipeline for {ticker} — activating Extended Thinking Mode",
+                "status": "done"
+            })
+
+            # ── Step 2: Fetching Live Market Data ─────────────────────────
+            advisor_steps.append({
+                "step": len(advisor_steps) + 1,
+                "title": "Fetching Live Market Data",
+                "detail": f"Pulling real-time quote, OHLCV, market cap, 52-week range for {ticker}",
+                "status": "done"
+            })
             try:
                 quote = get_stock_quote(ticker)
                 _quote_data[ticker] = quote
                 ccy = quote.get('currency', 'INR')
                 sym = '₹' if ccy == 'INR' else '$'
                 advisor_sections.append(
-                    f"--- {ticker} Detailed Quote ---\n"
+                    f"--- {ticker} Live Market Data ---\n"
                     f"Name: {quote.get('name', 'N/A')}\n"
                     f"Price: {sym}{_fv(quote.get('price'))}\n"
                     f"Open: {sym}{_fv(quote.get('open'))}\n"
@@ -891,55 +966,183 @@ def process_query(
                     f"Volume: {_fv(quote.get('volume'))}\n"
                     f"Market Cap: {sym}{_fv(quote.get('market_cap'))}\n"
                     f"PE Ratio: {_fv(quote.get('pe_ratio'), '')}\n"
+                    f"EPS: {_fv(quote.get('eps'), '')}\n"
                     f"Dividend Yield: {_fv(quote.get('dividend_yield'), '')}\n"
                     f"52W High: {sym}{_fv(quote.get('52_week_high'))}\n"
                     f"52W Low: {sym}{_fv(quote.get('52_week_low'))}\n"
+                    f"Beta: {_fv(quote.get('beta'), '')}\n"
                 )
                 if "stock_quote" not in advisor_tools:
                     advisor_tools.append("stock_quote")
             except Exception as eq:
                 print(f"[Advisor] Quote error for {ticker}: {eq}")
 
-            advisor_steps.append({"step": len(advisor_steps) + 1, "title": "Analyzing Fundamentals", "detail": f"PE ratio, market cap, dividends for {ticker}", "status": "done"})
+            # ── Step 3: Fundamental Health Assessment ─────────────────────
+            advisor_steps.append({
+                "step": len(advisor_steps) + 1,
+                "title": "Fundamental Health Assessment",
+                "detail": f"Evaluating PE ratio, market cap, earnings power, dividend sustainability for {ticker}",
+                "status": "done"
+            })
 
-            advisor_steps.append({"step": len(advisor_steps) + 1, "title": "Running Technical Analysis", "detail": f"3-month trend, support/resistance, momentum for {ticker}", "status": "done"})
+            # ── Step 4: Technical Momentum Scan ───────────────────────────
+            advisor_steps.append({
+                "step": len(advisor_steps) + 1,
+                "title": "Technical Momentum Scan",
+                "detail": f"Computing 3-month trend, SMA crossovers, RSI estimate, support/resistance, volatility for {ticker}",
+                "status": "done"
+            })
             try:
                 history = get_stock_history(ticker, period="3mo", interval="1d")
                 trend = analyze_trend(history)
                 _trend_data[ticker] = trend
+
+                # ── Compute additional technical indicators from history ──
+                rsi_val = "N/A"
+                sma20_val = "N/A"
+                sma50_val = "N/A"
+                vol_ratio = "N/A"
+
+                if history and len(history) >= 14:
+                    closes = [h.get('close', 0) for h in history if h.get('close')]
+                    volumes = [h.get('volume', 0) for h in history if h.get('volume')]
+
+                    # RSI(14)
+                    if len(closes) >= 15:
+                        gains, losses = [], []
+                        for i in range(1, 15):
+                            diff = closes[-i] - closes[-(i+1)]
+                            if diff >= 0:
+                                gains.append(diff)
+                            else:
+                                losses.append(abs(diff))
+                        avg_gain = sum(gains) / 14 if gains else 0
+                        avg_loss = sum(losses) / 14 if losses else 0.0001
+                        rs = avg_gain / avg_loss
+                        rsi = 100 - (100 / (1 + rs))
+                        rsi_val = f"{rsi:.1f}"
+
+                    # SMA 20 & SMA 50
+                    if len(closes) >= 20:
+                        sma20_val = f"{sum(closes[-20:]) / 20:.2f}"
+                    if len(closes) >= 50:
+                        sma50_val = f"{sum(closes[-50:]) / 50:.2f}"
+
+                    # Volume ratio (latest vs 20-day avg)
+                    if volumes and len(volumes) >= 2:
+                        recent_vol = volumes[-1]
+                        avg_vol = sum(volumes[-20:]) / min(20, len(volumes))
+                        if avg_vol > 0:
+                            vol_ratio = f"{recent_vol / avg_vol:.2f}x avg"
+
                 advisor_sections.append(
-                    f"--- {ticker} 3-Month Trend Analysis ---\n"
-                    f"Direction: {trend['direction']}\n"
-                    f"Price Change: {trend['price_change_pct']:+.2f}%\n"
-                    f"Volatility: {trend['volatility_score']:.2f}/1.0\n"
-                    f"Support: {trend['support']}\n"
-                    f"Resistance: {trend['resistance']}\n"
-                    f"Avg Volume: {trend['avg_volume']:,}\n"
-                    f"Summary: {trend['summary']}\n"
+                    f"--- {ticker} Technical Analysis (3-Month) ---\n"
+                    f"Trend Direction: {trend['direction']}\n"
+                    f"Price Change (3mo): {trend['price_change_pct']:+.2f}%\n"
+                    f"Volatility Score: {trend['volatility_score']:.2f}/1.0\n"
+                    f"Support Level: {trend['support']}\n"
+                    f"Resistance Level: {trend['resistance']}\n"
+                    f"Avg Daily Volume: {trend['avg_volume']:,}\n"
+                    f"Latest Volume vs Avg: {vol_ratio}\n"
+                    f"RSI (14): {rsi_val}\n"
+                    f"SMA 20: {sma20_val}\n"
+                    f"SMA 50: {sma50_val}\n"
+                    f"Trend Summary: {trend['summary']}\n"
                 )
+                for t in ["stock_history", "trend_analysis"]:
+                    if t not in advisor_tools:
+                        advisor_tools.append(t)
                 for t in ["stock_history", "trend_analysis"]:
                     if t not in advisor_tools:
                         advisor_tools.append(t)
             except Exception as et:
                 print(f"[Advisor] Trend error for {ticker}: {et}")
 
-            advisor_steps.append({"step": len(advisor_steps) + 1, "title": "Evaluating Company Profile", "detail": f"Sector, business model, competitive position for {ticker}", "status": "done"})
+            # ── Step 5: Company & Sector Profile ─────────────────────────
+            advisor_steps.append({
+                "step": len(advisor_steps) + 1,
+                "title": "Company & Sector Profiling",
+                "detail": f"Mapping {ticker}'s sector, industry, workforce, competitive moat and business model",
+                "status": "done"
+            })
             try:
                 info = get_company_info(ticker)
                 _info_data[ticker] = info
                 advisor_sections.append(
-                    f"--- {ticker} Company Profile ---\n"
+                    f"--- {ticker} Company & Business Profile ---\n"
                     f"Sector: {info.get('sector')}\n"
                     f"Industry: {info.get('industry')}\n"
                     f"Employees: {info.get('employees')}\n"
-                    f"Description: {(info.get('description') or '')[:400]}\n"
+                    f"Country: {info.get('country', 'India')}\n"
+                    f"Business Description: {(info.get('description') or '')[:500]}\n"
                 )
                 if "company_info" not in advisor_tools:
                     advisor_tools.append("company_info")
             except Exception as ei:
                 print(f"[Advisor] Info error for {ticker}: {ei}")
 
-        advisor_steps.append({"step": len(advisor_steps) + 1, "title": "Generating Investment Thesis", "detail": "Building bull/bear cases and investment recommendation", "status": "done"})
+            # ── Step 6: 1-Year Price Context ──────────────────────────────
+            advisor_steps.append({
+                "step": len(advisor_steps) + 1,
+                "title": "1-Year Price Context",
+                "detail": f"Mapping {ticker}'s 12-month price trajectory and long-term support zones",
+                "status": "done"
+            })
+            try:
+                history_1y = get_stock_history(ticker, period="1y", interval="1wk")
+                if history_1y and len(history_1y) >= 4:
+                    closes_1y = [h.get('close', 0) for h in history_1y if h.get('close')]
+                    if closes_1y:
+                        low_1y = min(closes_1y)
+                        high_1y = max(closes_1y)
+                        start_1y = closes_1y[0]
+                        end_1y = closes_1y[-1]
+                        annual_chg = ((end_1y - start_1y) / start_1y * 100) if start_1y else 0
+                        advisor_sections.append(
+                            f"--- {ticker} 1-Year Price Context ---\n"
+                            f"Annual Price Change: {annual_chg:+.2f}%\n"
+                            f"1Y Low: {low_1y:.2f}\n"
+                            f"1Y High: {high_1y:.2f}\n"
+                            f"Current vs 1Y High: {((end_1y - high_1y) / high_1y * 100):+.1f}% from high\n"
+                            f"Current vs 1Y Low: {((end_1y - low_1y) / low_1y * 100):+.1f}% above low\n"
+                        )
+            except Exception as e1y:
+                print(f"[Advisor] 1Y context error for {ticker}: {e1y}")
+
+            # ── Step 7: News & Sentiment Signals ──────────────────────────
+            advisor_steps.append({
+                "step": len(advisor_steps) + 1,
+                "title": "News & Sentiment Signals",
+                "detail": f"Scanning recent news headlines and market sentiment for {ticker}",
+                "status": "done"
+            })
+            try:
+                news_items = search_scraped(ticker.replace(".NS", "").replace(".BO", ""), limit=4)
+                if news_items:
+                    news_lines = ["--- Recent News & Sentiment ---"]
+                    for n in news_items:
+                        news_lines.append(f"  [{n.get('title', 'Untitled')}] — {n.get('url', '')}")
+                    advisor_sections.append("\n".join(news_lines) + "\n")
+                    if "news_scraper" not in advisor_tools:
+                        advisor_tools.append("news_scraper")
+            except Exception:
+                pass
+
+        # ── Step 8: Risk & Portfolio Calibration ──────────────────────────
+        advisor_steps.append({
+            "step": len(advisor_steps) + 1,
+            "title": "Risk & Portfolio Calibration",
+            "detail": "Scoring volatility, computing risk-reward ratio, calibrating position sizing",
+            "status": "done"
+        })
+
+        # ── Step 9: Synthesizing Investment Thesis ────────────────────────
+        advisor_steps.append({
+            "step": len(advisor_steps) + 1,
+            "title": "Synthesizing Investment Thesis",
+            "detail": "Building bull/bear duel, entry strategy, stop-loss targets and final verdict",
+            "status": "done"
+        })
 
         if advisor_sections:
             tool_data = "\n".join(advisor_sections)

@@ -4,7 +4,9 @@ import Preloader from '../components/Preloader';
 import Navbar from '../components/Navbar';
 import HeroSection from '../components/HeroSection';
 import FeaturesSection from '../components/FeaturesSection';
+import DemoSection from '../components/DemoSection';
 import AboutSection from '../components/AboutSection';
+import LatestBlogsSection from '../components/LatestBlogsSection';
 import Footer from '../components/Footer';
 import TargetCursor from '../components/TargetCursor';
 import './LandingPage.css';
@@ -53,7 +55,9 @@ const LandingPage = () => {
       <Navbar />
       <HeroSection />
       <FeaturesSection />
+      <DemoSection />
       <AboutSection />
+      <LatestBlogsSection />
       <Footer />
     </div>
   );

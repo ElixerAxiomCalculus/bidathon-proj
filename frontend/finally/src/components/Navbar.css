@@ -32,6 +32,19 @@
   text-decoration: none;
   cursor: pointer;
   transition: opacity 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.navbar__logo-icon {
+  flex-shrink: 0;
+  border-radius: 7px;
+  transition: transform 0.3s ease;
+}
+
+.navbar__logo:hover .navbar__logo-icon {
+  transform: scale(1.08);
 }
 
 .navbar__logo:hover {

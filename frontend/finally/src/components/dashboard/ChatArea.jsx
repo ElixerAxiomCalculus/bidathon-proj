@@ -1,7 +1,9 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Markdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import StockChart from './StockChart';
+import { FinAllyLoader } from '../FinAllyLogo';
 import './ChatArea.css';
 
 const TradePreviewCard = ({ preview, onConfirm, onCancel, confirmed }) => {
@@ -71,6 +73,27 @@ const LANGUAGES = [
   { code: 'de', label: 'German' },
 ];
 
+const VersionBanner = () => {
+  const navigate = useNavigate();
+  const [visible, setVisible] = useState(true);
+  if (!visible) return null;
+  return (
+    <div className="chat-area__version-banner">
+      <span className="chat-area__version-pulse" />
+      <span className="chat-area__version-text">
+        FinAlly <strong>v2.1</strong> is here —&nbsp;
+        <button
+          className="chat-area__version-link"
+          onClick={() => navigate('/docs?tab=changelog')}
+        >
+          Check out what's new
+        </button>
+      </span>
+      <button className="chat-area__version-close" onClick={() => setVisible(false)} aria-label="Dismiss">✕</button>
+    </div>
+  );
+};
+
 const ChatArea = ({ chat, onSendMessage, onNewChat, isAgentTyping, onTradeConfirm, onClearChat, onExportChat }) => {
   const [input, setInput] = useState('');
   const [chatMode, setChatMode] = useState('auto');
@@ -86,11 +109,15 @@ const ChatArea = ({ chat, onSendMessage, onNewChat, isAgentTyping, onTradeConfir
   };
 
   const ADVISOR_STEPS = [
-    { text: 'Loading market data...' },
-    { text: 'Analyzing fundamentals...' },
-    { text: 'Running technical analysis...' },
-    { text: 'Evaluating company profile...' },
-    { text: 'Generating investment thesis...' },
+    { text: 'Initializing research session...' },
+    { text: 'Fetching live market data...' },
+    { text: 'Assessing fundamental health...' },
+    { text: 'Running technical momentum scan...' },
+    { text: 'Profiling company & sector...' },
+    { text: 'Mapping 1-year price context...' },
+    { text: 'Scanning news & sentiment signals...' },
+    { text: 'Calibrating risk & portfolio fit...' },
+    { text: 'Synthesizing investment thesis...' },
   ];
 
   useEffect(() => {
@@ -226,6 +253,7 @@ const ChatArea = ({ chat, onSendMessage, onNewChat, isAgentTyping, onTradeConfir
   if (!chat) {
     return (
       <main className="chat-area">
+        <VersionBanner />
         <div className="chat-area__welcome">
           <div className="chat-area__welcome-logo">
             <span className="chat-area__welcome-fin">Fin</span>
@@ -415,15 +443,11 @@ const ChatArea = ({ chat, onSendMessage, onNewChat, isAgentTyping, onTradeConfir
             <div className="chat-area__message-body">
               {chatMode === 'advisor' ? (
                 <div className="chat-area__thinking-live">
+                  <FinAllyLoader size={32} />
                   <span className="chat-area__thinking-text">{ADVISOR_STEPS[advisorStep]?.text}</span>
-                  <span className="chat-area__typing-dot" style={{ marginLeft: 8 }} />
                 </div>
               ) : (
-                <div className="chat-area__typing">
-                  <span className="chat-area__typing-dot" />
-                  <span className="chat-area__typing-dot" />
-                  <span className="chat-area__typing-dot" />
-                </div>
+                <FinAllyLoader size={44} />
               )}
             </div>
           </div>

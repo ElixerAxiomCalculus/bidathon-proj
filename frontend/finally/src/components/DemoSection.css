@@ -1,0 +1,153 @@
+.demo {
+  position: relative;
+  width: 100%;
+  background: #010a14;
+  padding: 6rem 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+/* Subtle top/bottom dividers using the primary blue */
+.demo::before,
+.demo::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  width: 100%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent 0%, rgba(4, 102, 200, 0.25) 30%, rgba(4, 102, 200, 0.25) 70%, transparent 100%);
+}
+.demo::before { top: 0; }
+.demo::after  { bottom: 0; }
+
+.demo__inner {
+  max-width: 1100px;
+  width: 100%;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3.5rem;
+}
+
+/* ── Header ── */
+.demo__header {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  opacity: 0; /* animated by GSAP */
+}
+
+.demo__label {
+  display: inline-block;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.7rem;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #0466C8;
+  background: rgba(4, 102, 200, 0.1);
+  border: 1px solid rgba(4, 102, 200, 0.25);
+  padding: 0.3rem 0.9rem;
+  border-radius: 20px;
+}
+
+.demo__title {
+  font-family: 'Inter', sans-serif;
+  font-size: clamp(2rem, 5vw, 3rem);
+  font-weight: 300;
+  color: #ffffff;
+  letter-spacing: -0.04em;
+  line-height: 1.1;
+  margin: 0;
+}
+
+.demo__title-accent {
+  color: #0466C8;
+}
+
+.demo__subtitle {
+  font-family: 'Inter', sans-serif;
+  font-size: clamp(0.875rem, 2vw, 1.0625rem);
+  font-weight: 300;
+  color: rgba(255, 255, 255, 0.45);
+  max-width: 560px;
+  line-height: 1.65;
+  margin: 0;
+}
+
+/* ── Video Container ── */
+.demo__video-wrap {
+  position: relative;
+  width: 100%;
+  max-width: 960px;
+  border-radius: 14px;
+  opacity: 0; /* animated by GSAP */
+}
+
+/* Glow effect behind the video */
+.demo__video-glow {
+  position: absolute;
+  inset: -20px;
+  border-radius: 20px;
+  background: radial-gradient(ellipse at center, rgba(4, 102, 200, 0.18) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+  filter: blur(20px);
+}
+
+.demo__video {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  border-radius: 12px;
+  display: block;
+  background: #000;
+  outline: none;
+  /* Custom border will be drawn by the overlay div */
+}
+
+/* Thin glowing border overlay */
+.demo__video-border {
+  position: absolute;
+  inset: 0;
+  border-radius: 12px;
+  border: 1px solid rgba(4, 102, 200, 0.35);
+  pointer-events: none;
+  z-index: 2;
+  box-shadow:
+    0 0 0 1px rgba(4, 102, 200, 0.1),
+    0 8px 40px rgba(0, 0, 0, 0.6),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+/* Custom video controls color (Chrome/Edge) */
+.demo__video::-webkit-media-controls-panel {
+  background: rgba(2, 13, 24, 0.95);
+}
+
+@media (max-width: 768px) {
+  .demo {
+    padding: 4rem 1.25rem;
+  }
+
+  .demo__inner {
+    gap: 2.5rem;
+  }
+
+  .demo__video-wrap {
+    border-radius: 10px;
+  }
+
+  .demo__video {
+    border-radius: 8px;
+  }
+
+  .demo__video-border {
+    border-radius: 8px;
+  }
+}

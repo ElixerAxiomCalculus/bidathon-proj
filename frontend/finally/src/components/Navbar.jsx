@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { gsap } from 'gsap';
+import FinAllyLogo from './FinAllyLogo';
 import './Navbar.css';
 
 const Navbar = () => {
@@ -23,6 +24,8 @@ const Navbar = () => {
     } else if (href.startsWith('#')) {
       const el = document.querySelector(href);
       if (el) el.scrollIntoView({ behavior: 'smooth' });
+    } else {
+      navigate(href);
     }
   };
 
@@ -53,6 +56,7 @@ const Navbar = () => {
     { label: 'Home', href: '/' },
     { label: 'Features', href: '#features' },
     { label: 'About', href: '#about' },
+    { label: 'Blogs', href: '/blogs' },
   ];
 
   return (
@@ -62,6 +66,7 @@ const Navbar = () => {
     >
       <div className="navbar__inner">
         <a href="/" className="navbar__logo" onClick={(e) => handleNavClick(e, '/')}>
+          <FinAllyLogo size={26} className="navbar__logo-icon" />
           <span className="navbar__logo-fin">Fin</span>
           <span className="navbar__logo-ally">Ally</span>
           <span className="navbar__logo-bytestorm">, a ByteStorm Creation</span>

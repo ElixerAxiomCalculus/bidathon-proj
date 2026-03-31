@@ -1,9 +1,11 @@
 import { useEffect, useRef } from 'react';
 import { gsap } from 'gsap';
+import { useNavigate } from 'react-router-dom';
 import ThreeBackground from './ThreeBackground';
 import './HeroSection.css';
 
 const HeroSection = () => {
+  const navigate = useNavigate();
   const heroRef = useRef(null);
   const logoFinRef = useRef(null);
   const logoAllyRef = useRef(null);
@@ -57,6 +59,17 @@ const HeroSection = () => {
       <ThreeBackground />
 
       <div className="hero__content">
+        {/* ── v2.1 subtle announcement pill ── */}
+        <button
+          className="hero__announcement"
+          onClick={() => navigate('/login')}
+          title="See what's new in v2.1"
+        >
+          <span className="hero__announcement-dot" />
+          <span className="hero__announcement-text">FinAlly v2.1 is live</span>
+          <span className="hero__announcement-arrow">&#8594;</span>
+        </button>
+
         <h1 className="hero__logo cursor-target">
           <span className="hero__logo-fin" ref={logoFinRef}>Fin</span>
           <span className="hero__logo-ally" ref={logoAllyRef}>Ally</span>

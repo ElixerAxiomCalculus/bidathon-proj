@@ -1,354 +1,369 @@
-import { useState, useRef, useEffect } from 'react';
+/**
+ * Razorpay Sandbox Mock — PaymentOverlay v2.1
+ *
+ * Replicates the authentic Razorpay Test Checkout experience:
+ * - Razorpay branding, layout and color scheme
+ * - Supports Cards, UPI, Net Banking tabs
+ * - Accepts Razorpay's documented test credentials:
+ *     Card  : 4111 1111 1111 1111  |  Expiry: any future  |  CVV: any 3 digits
+ *     UPI   : success@razorpay  (always succeeds)
+ *             failure@razorpay  (always fails)
+ * - Generates a mock payment_id in Razorpay format (pay_XXXXXXXXXXXXXXXX)
+ * - Shows "Powered by Razorpay" footer with SVG logo
+ *
+ * On success → calls onSuccess(amount) to credit the FinAlly wallet.
+ */
+
+import { useState, useEffect, useRef } from 'react';
 import './PaymentOverlay.css';
 
-const PRESET_AMOUNTS = [1000, 5000, 10000, 25000, 50000, 100000];
-const BANKS = ['SBI', 'HDFC Bank', 'ICICI Bank', 'Axis Bank', 'Kotak Mahindra', 'PNB', 'Bank of Baroda', 'Yes Bank'];
+/* ── Razorpay SVG logo (inline, no external dep) ────────────────────────── */
+const RazorpayLogo = ({ height = 18 }) => (
+  <svg height={height} viewBox="0 0 107 28" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="Razorpay">
+    <path d="M13.92 0L0 17.5h8.4L6.72 28l14-17.5h-8.4L13.92 0z" fill="#3395FF"/>
+    <path d="M6.72 28l1.68-10.5H0L6.72 28z" fill="#1A6FDF"/>
+    <path fillRule="evenodd" clipRule="evenodd" d="M30.5 8.5h5.7c1.4 0 2.5.3 3.2 1 .7.6 1 1.5 1 2.6 0 1-.3 1.8-.8 2.4-.5.6-1.2 1-2.1 1.2l3.4 5.4h-3.1l-3-5h-1.8v5H30.5V8.5zm3.5 5.3h1.9c.8 0 1.4-.2 1.7-.5.4-.3.5-.7.5-1.3 0-.5-.2-1-.5-1.2-.4-.3-.9-.4-1.7-.4h-1.9v3.4zm11.5 1.9l-1.6-4.8h-.1l-1.6 4.8h3.3zm2.1 5.4h-3.2l-.9-2.7h-4.5l-.9 2.7h-3.2l4.9-13.1h2.9l4.9 13.1zm8.4-10.6H52v2.5h4.2v2.4H52v3.3h4.5v2.4H49V8.5h7.5v2.5zm6.2 0h-3.5V8.5h10.5v2.5h-3.5v10.6h-3.5V10.5zm10.7 4.3c0-2.1.5-3.7 1.6-4.9 1.1-1.2 2.6-1.8 4.5-1.8 1.9 0 3.4.6 4.5 1.8 1.1 1.2 1.6 2.8 1.6 4.9s-.5 3.7-1.6 4.9c-1.1 1.2-2.6 1.8-4.5 1.8-1.9 0-3.4-.6-4.5-1.8-1.1-1.2-1.6-2.9-1.6-4.9zm3.6 0c0 1.3.2 2.3.7 3 .5.7 1.1 1 2 1 .8 0 1.5-.3 2-1 .5-.7.7-1.7.7-3s-.2-2.3-.7-3c-.5-.7-1.1-1-2-1-.8 0-1.5.3-2 1-.5.7-.7 1.7-.7 3zm14.3-4.3h-3.6V8.5h10.5v2.5h-3.6v10.6h-3.3V10.5zm10.4-2h3.3v5.2l4.5-5.2h4l-5 5.5 5.3 7.6h-4l-3.5-5.3-1.3 1.4v3.9h-3.3V8.5z" fill="#fff"/>
+  </svg>
+);
+
+/* ── Test credential hints ────────────────────────────────────────────────── */
+const TEST_HINTS = {
+  card: [
+    { label: 'Test card (always success)', value: '4111 1111 1111 1111' },
+    { label: 'Expiry', value: '12/26 · CVV: 123' },
+  ],
+  upi: [
+    { label: 'Success UPI', value: 'success@razorpay' },
+    { label: 'Failure UPI', value: 'failure@razorpay' },
+  ],
+};
+
+const BANKS = [
+  { id: 'sbi', name: 'SBI' },
+  { id: 'hdfc', name: 'HDFC Bank' },
+  { id: 'icici', name: 'ICICI Bank' },
+  { id: 'axis', name: 'Axis Bank' },
+  { id: 'kotak', name: 'Kotak' },
+  { id: 'pnb', name: 'PNB' },
+  { id: 'bob', name: 'Bank of Baroda' },
+  { id: 'yes', name: 'Yes Bank' },
+];
+
+/* ── Utility ─────────────────────────────────────────────────────────────── */
+const genPaymentId = () => {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  return 'pay_' + Array.from({ length: 16 }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
+};
+
+const formatCardNumber = (val) =>
+  val.replace(/\D/g, '').slice(0, 16).replace(/(.{4})/g, '$1 ').trim();
+
+const formatExpiry = (val) => {
+  const d = val.replace(/\D/g, '').slice(0, 4);
+  return d.length > 2 ? d.slice(0, 2) + '/' + d.slice(2) : d;
+};
+
+/* ═══════════════════════════════════════════════════════════════════════════ */
 
 const PaymentOverlay = ({ isOpen, onClose, onSuccess, currentBalance }) => {
-  const [step, setStep] = useState('amount');
+  const [tab, setTab] = useState('card');
   const [amount, setAmount] = useState('');
-  const [method, setMethod] = useState(null);
-  const [cardData, setCardData] = useState({ number: '', expiry: '', cvv: '', name: '' });
+  const [amountConfirmed, setAmountConfirmed] = useState(false);
+  const [card, setCard] = useState({ number: '', expiry: '', cvv: '', name: '' });
   const [upiId, setUpiId] = useState('');
-  const [selectedBank, setSelectedBank] = useState('');
+  const [bank, setBank] = useState('');
   const [processing, setProcessing] = useState(false);
-  const [success, setSuccess] = useState(false);
+  const [result, setResult] = useState(null); // null | { ok: bool, paymentId?: str, msg?: str }
   const [error, setError] = useState('');
   const overlayRef = useRef(null);
 
   useEffect(() => {
     if (isOpen) {
-      setStep('amount');
-      setAmount('');
-      setMethod(null);
-      setCardData({ number: '', expiry: '', cvv: '', name: '' });
-      setUpiId('');
-      setSelectedBank('');
-      setProcessing(false);
-      setSuccess(false);
-      setError('');
+      setTab('card'); setAmount(''); setAmountConfirmed(false);
+      setCard({ number: '', expiry: '', cvv: '', name: '' });
+      setUpiId(''); setBank(''); setProcessing(false); setResult(null); setError('');
     }
   }, [isOpen]);
 
   useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = 'hidden';
-      return () => { document.body.style.overflow = ''; };
-    }
+    document.body.style.overflow = isOpen ? 'hidden' : '';
+    return () => { document.body.style.overflow = ''; };
   }, [isOpen]);
 
   if (!isOpen) return null;
 
-  const parsedAmount = parseFloat(amount) || 0;
+  const parsed = parseFloat(amount) || 0;
 
-  const handleAmountNext = () => {
-    if (parsedAmount < 100) { setError('Minimum amount is ₹100'); return; }
-    if (parsedAmount > 100_000_000) { setError('Maximum amount is ₹10 Cr'); return; }
-    setError('');
-    setStep('method');
+  /* ── Validation ──────────────────────────────────────────────────────── */
+  const validate = () => {
+    if (tab === 'card') {
+      const num = card.number.replace(/\s/g, '');
+      if (num.length < 16) return 'Enter a valid 16-digit card number';
+      if (card.expiry.length < 5) return 'Enter a valid expiry (MM/YY)';
+      if (card.cvv.length < 3) return 'Enter a valid CVV';
+      if (!card.name.trim()) return 'Enter the cardholder name';
+    } else if (tab === 'upi') {
+      if (!upiId.includes('@')) return 'Enter a valid UPI ID (e.g. success@razorpay)';
+    } else if (tab === 'netbanking') {
+      if (!bank) return 'Please select a bank';
+    }
+    return null;
   };
 
-  const handleMethodSelect = (m) => {
-    setMethod(m);
-    setStep('details');
-  };
-
-  const formatCardNumber = (val) => {
-    const digits = val.replace(/\D/g, '').slice(0, 16);
-    return digits.replace(/(.{4})/g, '$1 ').trim();
-  };
-
-  const formatExpiry = (val) => {
-    const digits = val.replace(/\D/g, '').slice(0, 4);
-    if (digits.length > 2) return digits.slice(0, 2) + '/' + digits.slice(2);
-    return digits;
-  };
-
+  /* ── Payment handler ─────────────────────────────────────────────────── */
   const handlePay = async () => {
-    setError('');
-    if (method === 'card') {
-      const num = cardData.number.replace(/\s/g, '');
-      if (num.length < 16) { setError('Enter a valid 16-digit card number'); return; }
-      if (cardData.expiry.length < 5) { setError('Enter valid expiry MM/YY'); return; }
-      if (cardData.cvv.length < 3) { setError('Enter valid CVV'); return; }
-      if (!cardData.name.trim()) { setError('Enter cardholder name'); return; }
-    } else if (method === 'upi') {
-      if (!upiId.includes('@')) { setError('Enter a valid UPI ID (e.g. name@upi)'); return; }
-    } else if (method === 'netbanking') {
-      if (!selectedBank) { setError('Select a bank'); return; }
+    const err = validate();
+    if (err) { setError(err); return; }
+
+    // Razorpay test: failure@razorpay always fails
+    if (tab === 'upi' && upiId.trim() === 'failure@razorpay') {
+      setError('Payment failed: VPA not found or transaction declined.');
+      return;
     }
 
+    setError('');
     setProcessing(true);
-    await new Promise((r) => setTimeout(r, 2000));
+
+    // Simulate network delay (Razorpay takes ~2s for sandbox)
+    await new Promise(r => setTimeout(r, 2200));
 
     try {
-      await onSuccess(parsedAmount);
+      await onSuccess(parsed);
+      setResult({ ok: true, paymentId: genPaymentId() });
+    } catch (e) {
+      setResult({ ok: false, msg: e.message || 'Payment could not be processed.' });
+    } finally {
       setProcessing(false);
-      setSuccess(true);
-    } catch (err) {
-      setProcessing(false);
-      setError(err.message || 'Payment failed');
     }
   };
 
-  const handleBackdropClick = (e) => {
-    if (e.target === overlayRef.current) onClose();
+  /* ── Backdrop click ──────────────────────────────────────────────────── */
+  const handleBackdrop = (e) => {
+    if (e.target === overlayRef.current && !processing) onClose();
   };
 
+  /* ════════════════════════════════════════════════════════════════════════ */
+
   return (
-    <div className="payment-overlay" ref={overlayRef} onClick={handleBackdropClick}>
-      <div className="payment-modal">
-        <div className="payment-modal__header">
-          <div className="payment-modal__header-left">
-            <div className="payment-modal__logo">
-              <span className="payment-modal__logo-fin">Fin</span>
-              <span className="payment-modal__logo-ally">Ally</span>
+    <div className="rzp-overlay" ref={overlayRef} onClick={handleBackdrop}>
+      <div className="rzp-modal">
+
+        {/* ── Top brand bar ─────────────────────────────────────────────── */}
+        <div className="rzp-modal__brand-bar">
+          <div className="rzp-modal__merchant">
+            <div className="rzp-modal__merchant-logo">F</div>
+            <div>
+              <div className="rzp-modal__merchant-name">FinAlly</div>
+              <div className="rzp-modal__merchant-sub">Secure Wallet Top-up</div>
             </div>
-            <span className="payment-modal__header-label">Add Funds</span>
           </div>
-          <button className="payment-modal__close" onClick={onClose}>&times;</button>
+          {!processing && !result && (
+            <button className="rzp-modal__close" onClick={onClose} aria-label="Close">✕</button>
+          )}
         </div>
 
-        {success ? (
-          <div className="payment-modal__success">
-            <div className="payment-modal__success-icon">
-              <div className="payment-modal__checkmark-text">[SUCCESS]</div>
-            </div>
-            <h3 className="payment-modal__success-title">Payment Successful</h3>
-            <p className="payment-modal__success-amount">₹{parsedAmount.toLocaleString('en-IN')}</p>
-            <p className="payment-modal__success-text">Added to your FinAlly wallet</p>
-            <button className="payment-modal__success-btn" onClick={onClose}>Done</button>
-          </div>
-        ) : processing ? (
-          <div className="payment-modal__processing">
-            <div className="payment-modal__spinner" />
-            <p className="payment-modal__processing-text">Processing payment...</p>
-            <p className="payment-modal__processing-sub">Please do not close this window</p>
-          </div>
-        ) : (
-          <>
-            <div className="payment-modal__steps">
-              <div className={`payment-modal__step ${step === 'amount' ? 'payment-modal__step--active' : (step !== 'amount' ? 'payment-modal__step--done' : '')}`}>
-                <span className="payment-modal__step-num">1</span>
-                <span className="payment-modal__step-label">Amount</span>
-              </div>
-              <div className="payment-modal__step-line" />
-              <div className={`payment-modal__step ${step === 'method' ? 'payment-modal__step--active' : (step === 'details' ? 'payment-modal__step--done' : '')}`}>
-                <span className="payment-modal__step-num">2</span>
-                <span className="payment-modal__step-label">Method</span>
-              </div>
-              <div className="payment-modal__step-line" />
-              <div className={`payment-modal__step ${step === 'details' ? 'payment-modal__step--active' : ''}`}>
-                <span className="payment-modal__step-num">3</span>
-                <span className="payment-modal__step-label">Pay</span>
-              </div>
-            </div>
-
-            <div className="payment-modal__body">
-              {step === 'amount' && (
-                <div className="payment-modal__amount-step">
-                  <div className="payment-modal__balance-display">
-                    <span className="payment-modal__balance-label">Current Balance</span>
-                    <span className="payment-modal__balance-value">₹{(currentBalance || 0).toLocaleString('en-IN', { maximumFractionDigits: 0 })}</span>
-                  </div>
-
-                  <label className="payment-modal__field-label">Enter Amount</label>
-                  <div className="payment-modal__amount-input-wrap">
-                    <span className="payment-modal__currency">₹</span>
-                    <input
-                      type="number"
-                      className="payment-modal__amount-input"
-                      placeholder="0"
-                      value={amount}
-                      onChange={(e) => { setAmount(e.target.value); setError(''); }}
-                      autoFocus
-                    />
-                  </div>
-
-                  <div className="payment-modal__presets">
-                    {PRESET_AMOUNTS.map((a) => (
-                      <button
-                        key={a}
-                        className={`payment-modal__preset ${parsedAmount === a ? 'payment-modal__preset--active' : ''}`}
-                        onClick={() => { setAmount(String(a)); setError(''); }}
-                      >
-                        ₹{a.toLocaleString('en-IN')}
-                      </button>
-                    ))}
-                  </div>
-
-                  {error && <p className="payment-modal__error">{error}</p>}
-
-                  <button
-                    className="payment-modal__primary-btn"
-                    disabled={!parsedAmount}
-                    onClick={handleAmountNext}
-                  >
-                    Continue
-                  </button>
+        {/* ── Amount strip ──────────────────────────────────────────────── */}
+        {!result && (
+          <div className="rzp-modal__amount-strip">
+            {!amountConfirmed ? (
+              <div className="rzp-modal__amount-input-area">
+                <span className="rzp-modal__amount-label">Enter Amount</span>
+                <div className="rzp-modal__amount-field-wrap">
+                  <span className="rzp-modal__rupee">₹</span>
+                  <input
+                    type="number"
+                    className="rzp-modal__amount-field"
+                    placeholder="0"
+                    value={amount}
+                    onChange={e => { setAmount(e.target.value); setError(''); }}
+                    autoFocus
+                    min={100}
+                  />
                 </div>
-              )}
-
-              {step === 'method' && (
-                <div className="payment-modal__method-step">
-                  <div className="payment-modal__amount-summary">
-                    <span>Adding</span>
-                    <strong>₹{parsedAmount.toLocaleString('en-IN')}</strong>
-                    <button className="payment-modal__edit-btn" onClick={() => setStep('amount')}>Edit</button>
-                  </div>
-
-                  <label className="payment-modal__field-label">Select Payment Method</label>
-
-                  <button className="payment-modal__method-card" onClick={() => handleMethodSelect('card')}>
-                    <div className="payment-modal__method-info">
-                      <span className="payment-modal__method-name">Credit / Debit Card</span>
-                      <span className="payment-modal__method-desc">Visa, Mastercard, RuPay</span>
-                    </div>
-                    <span className="payment-modal__method-arrow">&#8250;</span>
-                  </button>
-
-                  <button className="payment-modal__method-card" onClick={() => handleMethodSelect('upi')}>
-                    <div className="payment-modal__method-info">
-                      <span className="payment-modal__method-name">UPI</span>
-                      <span className="payment-modal__method-desc">Google Pay, PhonePe, Paytm</span>
-                    </div>
-                    <span className="payment-modal__method-arrow">&#8250;</span>
-                  </button>
-
-                  <button className="payment-modal__method-card" onClick={() => handleMethodSelect('netbanking')}>
-                    <div className="payment-modal__method-info">
-                      <span className="payment-modal__method-name">Net Banking</span>
-                      <span className="payment-modal__method-desc">All major Indian banks</span>
-                    </div>
-                    <span className="payment-modal__method-arrow">&#8250;</span>
-                  </button>
-                </div>
-              )}
-
-              {step === 'details' && (
-                <div className="payment-modal__details-step">
-                  <div className="payment-modal__amount-summary">
-                    <span>Paying</span>
-                    <strong>₹{parsedAmount.toLocaleString('en-IN')}</strong>
-                    <span className="payment-modal__method-tag">
-                      {method === 'card' ? 'Card' : method === 'upi' ? 'UPI' : 'NetBanking'}
-                    </span>
-                  </div>
-
-                  {method === 'card' && (
-                    <div className="payment-modal__card-form">
-                      <div className="payment-modal__field">
-                        <label className="payment-modal__field-label">Card Number</label>
-                        <input
-                          className="payment-modal__input"
-                          placeholder="1234 5678 9012 3456"
-                          value={cardData.number}
-                          onChange={(e) => setCardData({ ...cardData, number: formatCardNumber(e.target.value) })}
-                          maxLength={19}
-                        />
-                      </div>
-                      <div className="payment-modal__field-row">
-                        <div className="payment-modal__field">
-                          <label className="payment-modal__field-label">Expiry</label>
-                          <input
-                            className="payment-modal__input"
-                            placeholder="MM/YY"
-                            value={cardData.expiry}
-                            onChange={(e) => setCardData({ ...cardData, expiry: formatExpiry(e.target.value) })}
-                            maxLength={5}
-                          />
-                        </div>
-                        <div className="payment-modal__field">
-                          <label className="payment-modal__field-label">CVV</label>
-                          <input
-                            className="payment-modal__input"
-                            type="password"
-                            placeholder="•••"
-                            value={cardData.cvv}
-                            onChange={(e) => setCardData({ ...cardData, cvv: e.target.value.replace(/\D/g, '').slice(0, 4) })}
-                            maxLength={4}
-                          />
-                        </div>
-                      </div>
-                      <div className="payment-modal__field">
-                        <label className="payment-modal__field-label">Cardholder Name</label>
-                        <input
-                          className="payment-modal__input"
-                          placeholder="Name on card"
-                          value={cardData.name}
-                          onChange={(e) => setCardData({ ...cardData, name: e.target.value })}
-                        />
-                      </div>
-                    </div>
-                  )}
-
-                  {method === 'upi' && (
-                    <div className="payment-modal__upi-form">
-                      <div className="payment-modal__field">
-                        <label className="payment-modal__field-label">UPI ID</label>
-                        <input
-                          className="payment-modal__input"
-                          placeholder="yourname@upi"
-                          value={upiId}
-                          onChange={(e) => { setUpiId(e.target.value); setError(''); }}
-                        />
-                      </div>
-                      <div className="payment-modal__upi-apps">
-                        <span className="payment-modal__upi-hint">Popular: </span>
-                        {['@okicici', '@oksbi', '@ybl', '@paytm', '@apl'].map((suffix) => (
-                          <button
-                            key={suffix}
-                            className="payment-modal__upi-tag"
-                            onClick={() => {
-                              const name = upiId.split('@')[0] || 'user';
-                              setUpiId(name + suffix);
-                              setError('');
-                            }}
-                          >
-                            {suffix}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {method === 'netbanking' && (
-                    <div className="payment-modal__nb-form">
-                      <label className="payment-modal__field-label">Select Bank</label>
-                      <div className="payment-modal__bank-grid">
-                        {BANKS.map((bank) => (
-                          <button
-                            key={bank}
-                            className={`payment-modal__bank-btn ${selectedBank === bank ? 'payment-modal__bank-btn--active' : ''}`}
-                            onClick={() => { setSelectedBank(bank); setError(''); }}
-                          >
-                            {bank}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {error && <p className="payment-modal__error">{error}</p>}
-
-                  <div className="payment-modal__pay-actions">
-                    <button className="payment-modal__back-btn" onClick={() => setStep('method')}>
-                      &#8249; Back
+                <div className="rzp-modal__presets">
+                  {[1000, 5000, 10000, 25000, 50000].map(a => (
+                    <button key={a} className={`rzp-modal__preset ${parsed === a ? 'rzp-modal__preset--active' : ''}`}
+                      onClick={() => setAmount(String(a))}>
+                      ₹{a.toLocaleString('en-IN')}
                     </button>
-                    <button className="payment-modal__pay-btn" onClick={handlePay}>
-                      Pay ₹{parsedAmount.toLocaleString('en-IN')}
-                    </button>
-                  </div>
-
-                  <div className="payment-modal__secure">
-                    <span className="payment-modal__secure-icon">[LOCK]</span>
-                    <span>Secured by FinAlly &middot; 256-bit SSL encrypted</span>
-                  </div>
+                  ))}
                 </div>
-              )}
-            </div>
-          </>
+                {error && <p className="rzp-modal__err">{error}</p>}
+                <button className="rzp-modal__proceed-btn" disabled={parsed < 100}
+                  onClick={() => {
+                    if (parsed < 100) { setError('Minimum ₹100'); return; }
+                    setError(''); setAmountConfirmed(true);
+                  }}>
+                  Proceed to Pay
+                </button>
+              </div>
+            ) : (
+              <div className="rzp-modal__amount-confirmed">
+                <span className="rzp-modal__amount-display">₹{parsed.toLocaleString('en-IN')}</span>
+                <button className="rzp-modal__amount-edit" onClick={() => setAmountConfirmed(false)}>Edit</button>
+                <div className="rzp-modal__secure-badge">
+                  <span className="rzp-modal__lock">🔒</span> Secure
+                </div>
+              </div>
+            )}
+          </div>
         )}
+
+        {/* ── Processing ────────────────────────────────────────────────── */}
+        {processing && (
+          <div className="rzp-modal__processing">
+            <div className="rzp-modal__spinner" />
+            <p className="rzp-modal__proc-title">Processing Payment</p>
+            <p className="rzp-modal__proc-sub">Please wait. Do not close this window.</p>
+          </div>
+        )}
+
+        {/* ── Success ───────────────────────────────────────────────────── */}
+        {result?.ok && (
+          <div className="rzp-modal__result rzp-modal__result--success">
+            <div className="rzp-modal__result-icon rzp-modal__result-icon--success">
+              <svg viewBox="0 0 48 48" fill="none" width="52" height="52">
+                <circle cx="24" cy="24" r="24" fill="#00C853"/>
+                <path d="M13 24l8 8 14-16" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </div>
+            <h3 className="rzp-modal__result-title">Payment Successful</h3>
+            <p className="rzp-modal__result-amount">₹{parsed.toLocaleString('en-IN')}</p>
+            <p className="rzp-modal__result-id">Payment ID: <code>{result.paymentId}</code></p>
+            <p className="rzp-modal__result-sub">Funds added to your FinAlly wallet</p>
+            <button className="rzp-modal__done-btn" onClick={onClose}>Done</button>
+          </div>
+        )}
+
+        {/* ── Failure ───────────────────────────────────────────────────── */}
+        {result?.ok === false && (
+          <div className="rzp-modal__result rzp-modal__result--fail">
+            <div className="rzp-modal__result-icon rzp-modal__result-icon--fail">
+              <svg viewBox="0 0 48 48" fill="none" width="52" height="52">
+                <circle cx="24" cy="24" r="24" fill="#FF3D00"/>
+                <path d="M16 16l16 16M32 16l-16 16" stroke="white" strokeWidth="3" strokeLinecap="round"/>
+              </svg>
+            </div>
+            <h3 className="rzp-modal__result-title">Payment Failed</h3>
+            <p className="rzp-modal__result-sub">{result.msg || 'Something went wrong. Please try again.'}</p>
+            <button className="rzp-modal__done-btn rzp-modal__done-btn--retry"
+              onClick={() => setResult(null)}>Try Again</button>
+          </div>
+        )}
+
+        {/* ── Payment methods (only when amount confirmed & not processing/done) */}
+        {amountConfirmed && !processing && !result && (
+          <div className="rzp-modal__body">
+            {/* Tab nav */}
+            <div className="rzp-modal__tabs" role="tablist">
+              {[
+                { id: 'card', label: 'Cards' },
+                { id: 'upi', label: 'UPI' },
+                { id: 'netbanking', label: 'Net Banking' },
+              ].map(t => (
+                <button key={t.id} role="tab" aria-selected={tab === t.id}
+                  className={`rzp-modal__tab ${tab === t.id ? 'rzp-modal__tab--active' : ''}`}
+                  onClick={() => { setTab(t.id); setError(''); }}>
+                  {t.label}
+                </button>
+              ))}
+            </div>
+
+            {/* ── Card form ─────────────────────────────────────────────── */}
+            {tab === 'card' && (
+              <div className="rzp-modal__form">
+                <div className="rzp-modal__test-hint">
+                  <span className="rzp-modal__test-badge">TEST</span>
+                  <span>Card: <strong>4111 1111 1111 1111</strong> · Expiry: <strong>12/26</strong> · CVV: <strong>123</strong></span>
+                </div>
+                <div className="rzp-modal__field">
+                  <label className="rzp-modal__label">Card Number</label>
+                  <input className="rzp-modal__input" placeholder="1234 5678 9012 3456"
+                    value={card.number} maxLength={19}
+                    onChange={e => { setCard({ ...card, number: formatCardNumber(e.target.value) }); setError(''); }} />
+                </div>
+                <div className="rzp-modal__field-row">
+                  <div className="rzp-modal__field">
+                    <label className="rzp-modal__label">Expiry (MM/YY)</label>
+                    <input className="rzp-modal__input" placeholder="MM/YY"
+                      value={card.expiry} maxLength={5}
+                      onChange={e => { setCard({ ...card, expiry: formatExpiry(e.target.value) }); setError(''); }} />
+                  </div>
+                  <div className="rzp-modal__field">
+                    <label className="rzp-modal__label">CVV</label>
+                    <input className="rzp-modal__input" type="password" placeholder="•••"
+                      value={card.cvv} maxLength={4}
+                      onChange={e => { setCard({ ...card, cvv: e.target.value.replace(/\D/g, '').slice(0, 4) }); setError(''); }} />
+                  </div>
+                </div>
+                <div className="rzp-modal__field">
+                  <label className="rzp-modal__label">Name on Card</label>
+                  <input className="rzp-modal__input" placeholder="Full name"
+                    value={card.name}
+                    onChange={e => { setCard({ ...card, name: e.target.value }); setError(''); }} />
+                </div>
+              </div>
+            )}
+
+            {/* ── UPI form ──────────────────────────────────────────────── */}
+            {tab === 'upi' && (
+              <div className="rzp-modal__form">
+                <div className="rzp-modal__test-hint">
+                  <span className="rzp-modal__test-badge">TEST</span>
+                  <span><strong>success@razorpay</strong> → succeeds · <strong>failure@razorpay</strong> → fails</span>
+                </div>
+                <div className="rzp-modal__field">
+                  <label className="rzp-modal__label">UPI ID</label>
+                  <input className="rzp-modal__input rzp-modal__input--upi" placeholder="yourname@upi"
+                    value={upiId}
+                    onChange={e => { setUpiId(e.target.value); setError(''); }} />
+                </div>
+                <div className="rzp-modal__upi-shortcuts">
+                  {['@okicici', '@oksbi', '@ybl', '@paytm', '@apl'].map(s => (
+                    <button key={s} className="rzp-modal__upi-chip"
+                      onClick={() => { setUpiId((upiId.split('@')[0] || 'user') + s); setError(''); }}>
+                      {s}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* ── Net Banking ───────────────────────────────────────────── */}
+            {tab === 'netbanking' && (
+              <div className="rzp-modal__form">
+                <div className="rzp-modal__test-hint">
+                  <span className="rzp-modal__test-badge">TEST</span>
+                  <span>Select any bank — all succeed in sandbox mode</span>
+                </div>
+                <div className="rzp-modal__bank-grid">
+                  {BANKS.map(b => (
+                    <button key={b.id}
+                      className={`rzp-modal__bank-tile ${bank === b.id ? 'rzp-modal__bank-tile--active' : ''}`}
+                      onClick={() => { setBank(b.id); setError(''); }}>
+                      {b.name}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {error && <p className="rzp-modal__err rzp-modal__err--form">{error}</p>}
+
+            <button className="rzp-modal__pay-btn" onClick={handlePay}>
+              Pay ₹{parsed.toLocaleString('en-IN')}
+            </button>
+          </div>
+        )}
+
+        {/* ── Footer ────────────────────────────────────────────────────── */}
+        <div className="rzp-modal__footer">
+          <span className="rzp-modal__footer-text">Powered by</span>
+          <RazorpayLogo height={14} />
+          <span className="rzp-modal__footer-sep">·</span>
+          <span className="rzp-modal__footer-text">Test Mode</span>
+        </div>
+
       </div>
     </div>
   );

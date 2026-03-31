@@ -6,6 +6,8 @@ import Dashboard from './pages/Dashboard';
 import ProfileSettings from './pages/ProfileSettings';
 import QuantTerminalPage from './pages/QuantTerminalPage';
 import Documentation from './pages/Documentation';
+import Blog from './pages/Blog';
+import BlogPost from './pages/BlogPost';
 import { getToken } from './services/api';
 import './App.css';
 
@@ -17,6 +19,8 @@ function App() {
   return (
     <Routes>
       <Route path="/" element={<LandingPage />} />
+      <Route path="/blogs" element={<Blog />} />
+      <Route path="/blog/:slug" element={<BlogPost />} />
       <Route path="/signin" element={<AuthPage />} />
       <Route path="/login" element={<AuthPage />} />
       <Route path="/verify" element={<VerifyOtp />} />
